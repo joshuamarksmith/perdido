@@ -1549,28 +1549,74 @@ function setLookup(word, rest) {
   lookupEl.style.display = "flex";
 }
 
+function stripHtml(html) {
+  return new DOMParser().parseFromString(html, "text/html").body.textContent || "";
+}
+
+async function fetchJson(url, ms) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const res = await fetch(url, { signal: ctrl.signal });
+    if (!res.ok) return null; // 404 = word not found, not an outage
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/* Wiktionary: a real dictionary — we read only the word's SPANISH section,
+   so English homographs never leak in. Retries capitalized for proper nouns. */
+async function wiktionary(w) {
+  for (const form of [w, w[0].toUpperCase() + w.slice(1)]) {
+    const data = await fetchJson(
+      "https://en.wiktionary.org/api/rest_v1/page/definition/" + encodeURIComponent(form), 6000);
+    const groups = data && data.es;
+    if (!groups) continue;
+    const parts = [];
+    for (const g of groups) {
+      for (const d of g.definitions || []) {
+        const t = stripHtml(d.definition || "").trim();
+        if (t) parts.push(t.length > 90 ? t.slice(0, 87) + "…" : t);
+        if (parts.length === 2) break;
+      }
+      if (parts.length === 2) break;
+    }
+    if (parts.length) return parts.join(" · ");
+  }
+  return null;
+}
+
+/* MyMemory fallback for slang Wiktionary lacks; drops echo-backs and low-confidence junk */
+async function mymemory(w) {
+  const data = await fetchJson(
+    "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(w) + "&langpair=es|en", 6000);
+  const rd = data && data.responseData;
+  if (!rd || !rd.translatedText) return null;
+  const tr = rd.translatedText.toLowerCase().trim();
+  if (tr === w || !(rd.match >= 0.75) || /INVALID|NO QUERY|PLEASE SELECT/i.test(tr)) return null;
+  return tr;
+}
+
 async function lookupWord(raw) {
   const w = raw.replace(/[^\p{L}\p{M}'’-]/gu, "").toLowerCase();
   if (!w) return;
   const seq = ++lookupSeq;
   if (lookupCache.has(w)) return setLookup(w, "— " + lookupCache.get(w));
   setLookup(w, "…");
+  let result = null, offline = false;
   try {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 6000);
-    const res = await fetch(
-      "https://api.mymemory.translated.net/get?q=" + encodeURIComponent(w) + "&langpair=es|en",
-      { signal: ctrl.signal }
-    );
-    clearTimeout(timer);
-    const data = await res.json();
-    let tr = data && data.responseData && data.responseData.translatedText;
-    if (!tr || /INVALID|NO QUERY|PLEASE SELECT/i.test(tr)) throw new Error("bad");
-    tr = tr.toLowerCase();
-    lookupCache.set(w, tr);
-    if (seq === lookupSeq) setLookup(w, "— " + tr);
+    result = await wiktionary(w);
+    if (!result) result = await mymemory(w);
   } catch (err) {
-    if (seq === lookupSeq) setLookup(w, "— sin internet, no hay diccionario 😔");
+    offline = true;
+  }
+  if (seq !== lookupSeq) return;
+  if (result) {
+    lookupCache.set(w, result);
+    setLookup(w, "— " + result);
+  } else {
+    setLookup(w, offline ? "— sin internet, no hay diccionario 😔" : "— no encontré esta palabra 🤷");
   }
 }
 
