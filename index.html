@@ -11,6 +11,8 @@
   :root{
     --bg:#16121a; --panel:#201a26; --panel-2:#2a2331; --line:#3a3142;
     --text:#f2edf5; --muted:#a89bb3; --accent:#e5484d;
+    /* semantic colors: correctness/difficulty only — never scene theming */
+    --good:#46a758; --warn:#eda13c; --bad:#e5484d;
     --radius:18px;
   }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -79,6 +81,17 @@
     background:linear-gradient(160deg, var(--accent), color-mix(in srgb, var(--accent) 72%, #000));
     border-radius:var(--radius) var(--radius) 6px var(--radius);
   }
+  .me.bad{
+    background:var(--panel-2); color:var(--text);
+    border:1.5px solid color-mix(in srgb, var(--bad) 70%, transparent);
+  }
+  .me .mark{
+    display:inline-flex; width:18px; height:18px; margin-left:8px;
+    align-items:center; justify-content:center; vertical-align:-3px;
+    border-radius:50%; font-size:11px; font-weight:800; color:#fff;
+  }
+  .me.good .mark{ background:var(--good); }
+  .me.bad .mark{ background:var(--bad); }
   .line{
     align-self:center; text-align:center; max-width:90%;
     font-size:13.5px; color:var(--muted); font-style:italic; line-height:1.5;
@@ -183,9 +196,9 @@
   .card b{ display:block; font-size:17px; }
   .card small{ color:var(--muted); font-size:13px; }
   .card .dif{ margin-left:auto; font-size:12px; font-weight:700; white-space:nowrap; }
-  .dif.d1{ color:#4cb56d; }
-  .dif.d2{ color:#eda13c; }
-  .dif.d3{ color:#e5484d; }
+  .dif.d1{ color:var(--good); }
+  .dif.d2{ color:var(--warn); }
+  .dif.d3{ color:var(--bad); }
   #home .foot{ text-align:center; color:var(--muted); font-size:12px; margin-top:14px; line-height:1.7; }
 
   /* ---------- end overlay ---------- */
@@ -1455,6 +1468,7 @@ var SCENES = {
 /* ================= game ================= */
 const HYPE = ["¡Órale!", "¡Eso!", "¡Ándale!", "¡Fierro!", "¡Así se habla!"];
 const DIF = ["fácil", "medio", "difícil"];
+const DIF_COLOR = ["#46a758", "#eda13c", "#e5484d"]; // keep in sync with --good/--warn/--bad
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const app = document.getElementById("app");
@@ -1515,7 +1529,7 @@ function showHome() {
   for (const key of order) {
     const sc = SCENES[key];
     const card = el("button", "card");
-    card.style.setProperty("--c", sc.color);
+    card.style.setProperty("--c", DIF_COLOR[sc.dif - 1]);
     card.appendChild(text("span", "emoji", sc.emoji));
     const info = el("span");
     info.appendChild(text("b", null, sc.title));
@@ -1613,7 +1627,9 @@ function pick(c) {
   busy = true;
   hideLookup();
   choicesEl.innerHTML = "";
-  chat.appendChild(text("div", "bubble me", c.text));
+  const bubble = text("div", "bubble me " + (c.good ? "good" : "bad"), c.text);
+  bubble.appendChild(text("span", "mark", c.good ? "✓" : "✗"));
+  chat.appendChild(bubble);
   scrollChat();
   S.turns++;
 
