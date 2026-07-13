@@ -95,6 +95,18 @@
   }
   .line.heal{ font-style:normal; font-weight:800; color:#ff8fa0; font-size:15px; }
   .line.hint{ font-size:12.5px; opacity:.85; }
+  .whyb{
+    align-self:center; font-size:13px; font-weight:600; color:var(--muted);
+    padding:7px 14px; min-height:34px; border-radius:999px; border:1px dashed var(--line);
+    animation:pop .28s ease both; transition:color .15s, border-color .15s;
+  }
+  .whyb:active{ border-color:var(--accent); color:var(--text); }
+  .why{
+    align-self:center; max-width:90%;
+    font-size:13.5px; color:var(--muted); padding:10px 14px; line-height:1.55;
+    border:1px dashed color-mix(in srgb, var(--accent) 45%, transparent);
+    border-radius:12px; animation:pop .28s ease both;
+  }
   .trans{
     align-self:flex-start; max-width:82%; margin-top:-4px;
     font-size:13.5px; color:var(--muted); padding:9px 13px; line-height:1.45;
@@ -203,6 +215,10 @@
     border-bottom:1px solid var(--line); font-size:14.5px;
   }
   .vocab .row:last-child{ border-bottom:0; }
+  .oops{ margin-top:18px; }
+  .oops .row{ display:block; }
+  .oops .es{ display:block; margin-bottom:2px; }
+  .oops .en{ display:block; text-align:left; font-size:13.5px; line-height:1.5; }
   .vocab .es{ font-weight:700; }
   .vocab .en{ color:var(--muted); text-align:right; }
   .btns{ display:flex; gap:10px; margin-top:20px; }
@@ -295,9 +311,11 @@ var SCENES = {
           { text: "Tres tacos al pastor, por favor.", next: "q2", good: true },
           { text: "¿Qué me recomienda, joven?", next: "q1r", good: true },
           { text: "Tres tacos de pastor alemán.", next: "qd1", good: false,
-            react: "El taquero parpadea. «¿De pastor... alemán? ¿De perro, joven?»" },
+            react: "El taquero parpadea. «¿De pastor... alemán? ¿De perro, joven?»",
+            why: "You ordered 'German shepherd' tacos. The taco is 'al pastor' (spit-roasted pork); 'pastor alemán' is the dog breed." },
           { text: "Dame tacos, rápido.", next: "qd2", good: false,
-            react: "«Uy, qué genio. Aquí pedimos con 'por favor', güero.»" }
+            react: "«Uy, qué genio. Aquí pedimos con 'por favor', güero.»",
+            why: "'Give me tacos, fast.' No 'por favor', and the blunt 'dame' (give me) reads rude with strangers." }
         ]
       },
       q1r: {
@@ -306,9 +324,11 @@ var SCENES = {
         choices: [
           { text: "Tres, por favor.", next: "q2", good: true },
           { text: "¿Trompo? ¿El juguete?", next: "qd3", good: false,
-            react: "«El trompo de CARNE, joven.» Lo señala. Gira, majestuoso." },
+            react: "«El trompo de CARNE, joven.» Lo señala. Gira, majestuoso.",
+            why: "You asked if the 'trompo' is the spinning-top toy. Here it's the vertical spit the pork roasts on." },
           { text: "Cero, gracias.", next: "qd4", good: false,
-            react: "«¿CERO? ¿Vino a una taquería a no comer?»" }
+            react: "«¿CERO? ¿Vino a una taquería a no comer?»",
+            why: "'Zero, thanks.' You told a taco man you want zero tacos. He took it personally." }
         ]
       },
       qd1: {
@@ -317,7 +337,8 @@ var SCENES = {
         choices: [
           { text: "Ah, perdón. Tres al pastor, por favor.", next: "q2", good: true },
           { text: "¿Y de gato tiene?", next: "qd1b", good: false,
-            react: "El taquero se persigna. «Dios mío, los turistas.»" }
+            react: "El taquero se persigna. «Dios mío, los turistas.»",
+            why: "'Do you have cat?' You doubled down on mystery meat. He crossed himself." }
         ]
       },
       qd1b: {
@@ -326,7 +347,8 @@ var SCENES = {
         choices: [
           { text: "Puerco entonces. Tres al pastor.", next: "q2", good: true },
           { text: "¿La tripa es de gato?", next: "qab", good: false,
-            react: "La señora de las aguas suspira y se acerca. «Yo me encargo, Beto.»" }
+            react: "La señora de las aguas suspira y se acerca. «Yo me encargo, Beto.»",
+            why: "'Is the tripe cat?' Tripa is beef tripe. The water-stand grandma stepped in to rescue you." }
         ]
       },
       qd2: {
@@ -335,7 +357,8 @@ var SCENES = {
         choices: [
           { text: "Perdón. Tres al pastor, por favor.", next: "q2", good: true },
           { text: "Ya te dije. Tacos.", next: "qab", good: false,
-            react: "El taquero atiende a otros tres clientes. La señora de las aguas se apiada de usted." }
+            react: "El taquero atiende a otros tres clientes. La señora de las aguas se apiada de usted.",
+            why: "'I already told you. Tacos.' Still no please — and 'te' is the informal you, extra brusque here." }
         ]
       },
       qab: {
@@ -345,7 +368,8 @@ var SCENES = {
           { text: "Sí, señora. Tres al pastor, por favor.", next: "q2", good: true, heal: true,
             react: "La abuela pide por usted y le regala un agua. «Ándele, mijo.»" },
           { text: "No necesito ayuda de nadie.", next: "qd2b", good: false,
-            react: "La abuela lo mira como solo una abuela puede. Duele más que la salsa." }
+            react: "La abuela lo mira como solo una abuela puede. Duele más que la salsa.",
+            why: "'I don't need anyone's help.' Refusing a Mexican grandmother's help is a bold, doomed strategy." }
         ]
       },
       qd2b: {
@@ -354,7 +378,8 @@ var SCENES = {
         choices: [
           { text: "...Tacos. Tres al pastor, por favor.", next: "q2", good: true },
           { text: "Mi orgullo.", next: "qd2b", good: false,
-            react: "El estómago le ruge tan fuerte que dos palomas salen volando." }
+            react: "El estómago le ruge tan fuerte que dos palomas salen volando.",
+            why: "'My pride.' You chose pride over tacos. Your stomach disagreed, loudly." }
         ]
       },
       qd3: {
@@ -363,7 +388,8 @@ var SCENES = {
         choices: [
           { text: "Tres, por favor.", next: "q2", good: true },
           { text: "¿Y baila?", next: "qd3", good: false,
-            react: "«Gira, joven. Bailar, solo yo los viernes.»" }
+            react: "«Gira, joven. Bailar, solo yo los viernes.»",
+            why: "'Does it dance?' The trompo spins ('gira'); it doesn't dance ('bailar'). Only he dances, on Fridays." }
         ]
       },
       qd4: {
@@ -372,7 +398,8 @@ var SCENES = {
         choices: [
           { text: "Tres al pastor, por favor.", next: "q2", good: true },
           { text: "Cuarenta y siete.", next: "qd4", good: false,
-            react: "«¿Cuarenta y...? Empiece con tres, campeón.»" }
+            react: "«¿Cuarenta y...? Empiece con tres, campeón.»",
+            why: "'Forty-seven.' That's a catering order. 'Cuarenta y siete' = 47; you wanted 'tres' (3)." }
         ]
       },
       q2: {
@@ -382,9 +409,11 @@ var SCENES = {
           { text: "Sí, con todo, por favor.", next: "q3", good: true },
           { text: "¿Qué trae 'con todo'?", next: "q2r", good: true },
           { text: "¿Con todo? ¿Hasta con zapatos?", next: "qd5", good: false,
-            react: "El taquero se ríe. «Con cebolla y cilantro, joven. Zapatos los martes.»" },
+            react: "El taquero se ríe. «Con cebolla y cilantro, joven. Zapatos los martes.»",
+            why: "'With everything? Even shoes?' 'Con todo' just means the standard toppings: onion and cilantro." },
           { text: "No me toques.", next: "qd6", good: false,
-            react: "«...Nadie lo está tocando, güero.» Silencio incómodo." }
+            react: "«...Nadie lo está tocando, güero.» Silencio incómodo.",
+            why: "'Don't touch me.' 'Tocar' = to touch. Nobody was touching you. It got weird." }
         ]
       },
       q2r: {
@@ -394,7 +423,8 @@ var SCENES = {
           { text: "Perfecto. Con todo, entonces.", next: "q3", good: true },
           { text: "Sin cebolla, por favor.", next: "q3", good: true },
           { text: "¿Y el cilantro sabe a jabón?", next: "qd7", good: false,
-            react: "«Solo si su alma ya se rindió, joven.»" }
+            react: "«Solo si su alma ya se rindió, joven.»",
+            why: "'Does cilantro taste like soap?' A real genetic thing — but telling a taquero that is fighting words." }
         ]
       },
       qd7: {
@@ -403,7 +433,8 @@ var SCENES = {
         choices: [
           { text: "Con todo, por favor.", next: "q3", good: true },
           { text: "A jabón, entonces.", next: "qd7", good: false,
-            react: "El taquero le pone doble cilantro. Por ofender." }
+            react: "El taquero le pone doble cilantro. Por ofender.",
+            why: "'Like soap, then.' You insulted cilantro twice. He gave you double as punishment." }
         ]
       },
       qd5: {
@@ -412,7 +443,8 @@ var SCENES = {
         choices: [
           { text: "Sí, con todo, por favor.", next: "q3", good: true },
           { text: "Cebolla no, cilantro no, todo sí.", next: "qd5", good: false,
-            react: "«Eso... no tiene sentido, joven.»" }
+            react: "«Eso... no tiene sentido, joven.»",
+            why: "'No onion, no cilantro, everything yes.' But 'todo' (everything) IS the onion and cilantro. Contradiction." }
         ]
       },
       qd6: {
@@ -421,7 +453,8 @@ var SCENES = {
         choices: [
           { text: "Sí, con todo. Perdón, estoy nervioso.", next: "q3", good: true },
           { text: "¿Quién te dijo mi nombre?", next: "qd6", good: false,
-            react: "El taquero mira a la señora de las aguas. Ella niega con la cabeza." }
+            react: "El taquero mira a la señora de las aguas. Ella niega con la cabeza.",
+            why: "'Who told you my name?' Nobody said your name. 'Joven' just means 'young man'." }
         ]
       },
       q3: {
@@ -431,9 +464,11 @@ var SCENES = {
           { text: "La verde, por favor.", next: "q4", good: true },
           { text: "La roja. Me gusta el peligro.", next: "q3r", good: true },
           { text: "Estoy muy caliente.", next: "qd8", good: false,
-            react: "El taquero suelta la carcajada. «Eso no significa lo que usted cree, güero.»" },
+            react: "El taquero suelta la carcajada. «Eso no significa lo que usted cree, güero.»",
+            why: "Classic trap: 'estoy caliente' means you're aroused, not warm. For weather, say 'tengo calor'." },
           { text: "Sin sopa, gracias.", next: "qd9", good: false,
-            react: "«¿Sopa? Esto es taquería, no fonda, mi amigo.»" }
+            react: "«¿Sopa? Esto es taquería, no fonda, mi amigo.»",
+            why: "'No soup, thanks.' You misheard 'salsa' as 'sopa' (soup). A taquería doesn't serve soup." }
         ]
       },
       q3r: {
@@ -443,7 +478,8 @@ var SCENES = {
           { text: "Mejor poquita, para probar.", next: "q4", good: true },
           { text: "Seguro. Échele.", next: "q3r2", good: true },
           { text: "¿Su suegra está en la salsa?", next: "qd10", good: false,
-            react: "«En espíritu, joven. En espíritu.»" }
+            react: "«En espíritu, joven. En espíritu.»",
+            why: "'Is your mother-in-law IN the salsa?' She makes it ('la hace'). With a grudge, apparently." }
         ]
       },
       q3r2: {
@@ -454,7 +490,8 @@ var SCENES = {
           { text: "Leche, por favor.", next: "q5", good: true,
             react: "El taquero asiente lento. «¿Leche contra la de la suegra? ...Se vale.»" },
           { text: "No necesito tomar nada.", next: "qd11", good: false,
-            react: "Primera mordida. Ve colores nuevos. La abuela ya le sirve un agua, por piedad." }
+            react: "Primera mordida. Ve colores nuevos. La abuela ya le sirve un agua, por piedad.",
+            why: "'I don't need to drink anything' — against his mother-in-law's salsa. You saw new colors. Pride costs." }
         ]
       },
       qd10: {
@@ -463,7 +500,8 @@ var SCENES = {
         choices: [
           { text: "Poquita, por favor.", next: "q4", good: true },
           { text: "Invoque a su suegra.", next: "qd10", good: false,
-            react: "«No la invoco ni en Navidad, joven.»" }
+            react: "«No la invoco ni en Navidad, joven.»",
+            why: "'Summon your mother-in-law.' He does not summon her. Not even at Christmas." }
         ]
       },
       qd11: {
@@ -472,7 +510,8 @@ var SCENES = {
         choices: [
           { text: "Horchata, por favor.", next: "q5", good: true },
           { text: "Agua de la llave.", next: "qd11", good: false,
-            react: "«¿De la LLAVE? Eso sí es peligro. Ni yo, joven.»" }
+            react: "«¿De la LLAVE? Eso sí es peligro. Ni yo, joven.»",
+            why: "'Tap water' ('la llave' = the tap). The one drink even locals fear. Order the aguas frescas." }
         ]
       },
       qd8: {
@@ -481,7 +520,8 @@ var SCENES = {
         choices: [
           { text: "La verde, por favor.", next: "q4", good: true },
           { text: "La roja. Yo aguanto todo.", next: "qd8", good: false,
-            react: "Prueba una gotita de roja. Llora en tres idiomas." }
+            react: "Prueba una gotita de roja. Llora en tres idiomas.",
+            why: "'The red. I can handle anything.' 'Aguantar' = to endure. One drop later you cried in three languages." }
         ]
       },
       qd9: {
@@ -490,7 +530,8 @@ var SCENES = {
         choices: [
           { text: "Ah, salsa. La verde, por favor.", next: "q4", good: true },
           { text: "Ninguna. Odio la salsa.", next: "qd9", good: false,
-            react: "Toda la taquería voltea a verlo. Una señora murmura una oración." }
+            react: "Toda la taquería voltea a verlo. Una señora murmura una oración.",
+            why: "'None. I hate salsa.' Legal, but socially radioactive in a taquería. A señora prayed for you." }
         ]
       },
       q4: {
@@ -500,9 +541,11 @@ var SCENES = {
           { text: "Una horchata, por favor.", next: "q5", good: true },
           { text: "Una de jamaica, por favor.", next: "q5", good: true },
           { text: "¿Jamaica... el país?", next: "qd13", good: false,
-            react: "«La flor, joven. Jamaica la flor.»" },
+            react: "«La flor, joven. Jamaica la flor.»",
+            why: "'Jamaica... the country?' Agua de jamaica is hibiscus-flower water. The flower, not the island." },
           { text: "Un vaso de leche, por favor.", next: "qd12", good: false,
-            react: "«¿Leche? ¿Con salsa verde? La policía debería saber de usted.»" }
+            react: "«¿Leche? ¿Con salsa verde? La policía debería saber de usted.»",
+            why: "'A glass of milk, please.' With tacos and green salsa, milk is a crime of taste here." }
         ]
       },
       qd13: {
@@ -511,7 +554,8 @@ var SCENES = {
         choices: [
           { text: "Sí, una de jamaica, por favor.", next: "q5", good: true },
           { text: "¿Y tiene de otro país?", next: "qd13", good: false,
-            react: "«...Horchata. La horchata no tiene pasaporte, joven.»" }
+            react: "«...Horchata. La horchata no tiene pasaporte, joven.»",
+            why: "'Got one from another country?' Still stuck on the country. Horchata has no passport." }
         ]
       },
       qd12: {
@@ -520,7 +564,8 @@ var SCENES = {
         choices: [
           { text: "Horchata, por favor.", next: "q5", good: true },
           { text: "Leche con hielo.", next: "qd12", good: false,
-            react: "«No.» Solo eso: «No.»" }
+            react: "«No.» Solo eso: «No.»",
+            why: "'Milk with ice.' He answered with one word: no. There is no appeal process." }
         ]
       },
       q5: {
@@ -530,9 +575,11 @@ var SCENES = {
           { text: "Para aquí, por favor.", next: "q6", good: true },
           { text: "Para llevar, por favor.", next: "q5r", good: true },
           { text: "Para llorar.", next: "qd14", good: false,
-            react: "«¿Para llorar? Eso es con la roja, y usted no pidió tanta.»" },
+            react: "«¿Para llorar? Eso es con la roja, y usted no pidió tanta.»",
+            why: "'For crying.' You mangled 'para llevar' (to go) into 'para llorar' (to cry). One letter, big difference." },
           { text: "Llévame contigo.", next: "qd15", good: false,
-            react: "«Estoy casado, güero.» Le enseña el anillo." }
+            react: "«Estoy casado, güero.» Le enseña el anillo.",
+            why: "'Take me with you.' 'Llevar' also means taking a person. You accidentally flirted. He's married." }
         ]
       },
       q5r: {
@@ -541,9 +588,11 @@ var SCENES = {
         choices: [
           { text: "Sí, aparte, por favor.", next: "q6", good: true },
           { text: "¿Aparte de qué?", next: "qd16", good: false,
-            react: "«Aparte del taco, joven. En un vasito.»" },
+            react: "«Aparte del taco, joven. En un vasito.»",
+            why: "'Apart from what?' 'Aparte' here means on the side — salsa in a little cup, separate from the tacos." },
           { text: "En mis manos está bien.", next: "qd16", good: false,
-            react: "«¿En las MANOS? Respeto su valor, pero no.»" }
+            react: "«¿En las MANOS? Respeto su valor, pero no.»",
+            why: "'In my hands is fine.' You offered to carry loose salsa in your bare hands. He respects your courage. Still no." }
         ]
       },
       qd16: {
@@ -552,7 +601,8 @@ var SCENES = {
         choices: [
           { text: "Va. Gracias.", next: "q6", good: true },
           { text: "El sistema me ha fallado antes.", next: "qd16", good: false,
-            react: "«A todos, joven. Pero el vasito no falla.»" }
+            react: "«A todos, joven. Pero el vasito no falla.»",
+            why: "'The system has failed me before.' Deep — but 'el sistema' here is just a tiny salsa cup. The cup does not fail." }
         ]
       },
       qd14: {
@@ -561,7 +611,8 @@ var SCENES = {
         choices: [
           { text: "Aquí, por favor.", next: "q6", good: true },
           { text: "Me los llevo a llorar.", next: "qd14", good: false,
-            react: "El taquero decide no preguntar más." }
+            react: "El taquero decide no preguntar más.",
+            why: "'I'll take them away to cry.' Grammatically fine. Emotionally concerning. He stopped asking." }
         ]
       },
       qd15: {
@@ -570,7 +621,8 @@ var SCENES = {
         choices: [
           { text: "Para aquí, por favor.", next: "q6", good: true },
           { text: "¿Es una cita?", next: "qd15", good: false,
-            react: "Su esposa asoma desde la cocina. Usted finge leer el menú." }
+            react: "Su esposa asoma desde la cocina. Usted finge leer el menú.",
+            why: "'Is this a date?' 'Cita' = date/appointment. His wife appeared from the kitchen. You read the menu." }
         ]
       },
       q6: {
@@ -580,9 +632,11 @@ var SCENES = {
           { text: "Aquí tiene sesenta. Quédese el cambio.", next: "win", good: true },
           { text: "¿Me lo repite? ¿Cincuenta y cinco?", next: "q6r", good: true },
           { text: "Tenga, cinco pesos.", next: "qd17", good: false,
-            react: "«¿CINCO? Cincuenta y cinco, joven. Le faltan cincuenta.»" },
+            react: "«¿CINCO? Cincuenta y cinco, joven. Le faltan cincuenta.»",
+            why: "You paid 5 for a 55-peso order. 'Cincuenta y cinco' = fifty-five, not 'cinco' (five)." },
           { text: "¿Aceptan abrazos?", next: "qd18", good: false,
-            react: "«Los abrazos no pagan el gas, mi amigo.»" }
+            react: "«Los abrazos no pagan el gas, mi amigo.»",
+            why: "'Do you take hugs?' Hugs ('abrazos') are not legal tender. The gas bill agrees." }
         ]
       },
       q6r: {
@@ -591,7 +645,8 @@ var SCENES = {
         choices: [
           { text: "Perfecto. Aquí tiene sesenta.", next: "win", good: true },
           { text: "¿Y en dólares?", next: "qd19", good: false,
-            react: "«Uy, no. Aquí puro peso, güero.»" }
+            react: "«Uy, no. Aquí puro peso, güero.»",
+            why: "'And in dollars?' Street food runs on pesos — 'puro peso'. Dollars mark you as lost." }
         ]
       },
       qd19: {
@@ -600,7 +655,8 @@ var SCENES = {
         choices: [
           { text: "Sí. Aquí tiene sesenta.", next: "win", good: true },
           { text: "Traigo euros.", next: "qd19", good: false,
-            react: "«¿EUROS? ¿Qué es esto, el aeropuerto?»" }
+            react: "«¿EUROS? ¿Qué es esto, el aeropuerto?»",
+            why: "'I have euros.' Still not pesos. This is a street stand, not an airport exchange." }
         ]
       },
       qd17: {
@@ -609,7 +665,8 @@ var SCENES = {
         choices: [
           { text: "Sí, perdón. Aquí tiene sesenta.", next: "win", good: true },
           { text: "¿Y en abrazos cuánto?", next: "qd18", good: false,
-            react: "El taquero mira al cielo pidiendo paciencia." }
+            react: "El taquero mira al cielo pidiendo paciencia.",
+            why: "'And in hugs, how much?' Still trying to pay in hugs. He asked the sky for patience." }
         ]
       },
       qd18: {
@@ -618,7 +675,8 @@ var SCENES = {
         choices: [
           { text: "Aquí tiene sesenta. Quédese el cambio.", next: "win", good: true },
           { text: "Solo traigo tarjeta de biblioteca.", next: "qd18", good: false,
-            react: "«¿De biblioteca? Ya ni los libros son gratis, güero.»" }
+            react: "«¿De biblioteca? Ya ni los libros son gratis, güero.»",
+            why: "'I only have a library card.' 'Efectivo' means cash. The card buys nothing — not even books." }
         ]
       }
     }
@@ -653,9 +711,11 @@ var SCENES = {
           { text: "Busco una hamaca, señora.", next: "r2", good: true },
           { text: "¡Qué bonito puesto tiene!", next: "r1c", good: true },
           { text: "Busco un abrazo.", next: "rd1", good: false,
-            react: "«Ay, papacito. Eso no está en oferta.»" },
+            react: "«Ay, papacito. Eso no está en oferta.»",
+            why: "'I'm looking for a hug.' 'Buscar' = to look for. Hugs aren't on sale ('en oferta')." },
           { text: "Tengo hambre.", next: "rd2", good: false,
-            react: "«Aquí no es fonda, corazón. Pero compre algo y hablamos.»" }
+            react: "«Aquí no es fonda, corazón. Pero compre algo y hablamos.»",
+            why: "'I'm hungry.' A crafts stand isn't a fonda (lunch spot). State your shopping business first." }
         ]
       },
       r1c: {
@@ -664,9 +724,11 @@ var SCENES = {
         choices: [
           { text: "Una hamaca, por favor.", next: "r2c", good: true },
           { text: "Todo. Enséñeme todo.", next: "rd3", good: false,
-            react: "Cuarenta minutos después, usted sabe TODO sobre rebozos. La hamaca sigue sin precio." },
+            react: "Cuarenta minutos después, usted sabe TODO sobre rebozos. La hamaca sigue sin precio.",
+            why: "'Everything. Show me everything.' She did — 40 minutes of shawls, and the hammock price never moved." },
           { text: "¿Veinte años? Se ve cansada.", next: "rd4", good: false,
-            react: "«¿CANSADA?» La vecina del puesto de al lado dice «uuuh»." }
+            react: "«¿CANSADA?» La vecina del puesto de al lado dice «uuuh».",
+            why: "'Twenty years? You look tired.' Never tell a vendor she looks tired. The neighbor stand enjoyed it." }
         ]
       },
       rd1: {
@@ -675,7 +737,8 @@ var SCENES = {
         choices: [
           { text: "Una hamaca, por favor.", next: "r2", good: true },
           { text: "El amor.", next: "rd1", good: false,
-            react: "«El amor cuesta más que mis hamacas, y no doy factura.»" }
+            react: "«El amor cuesta más que mis hamacas, y no doy factura.»",
+            why: "'Love.' Love costs more than hammocks, and she doesn't issue receipts ('factura') for it." }
         ]
       },
       rd2: {
@@ -684,7 +747,8 @@ var SCENES = {
         choices: [
           { text: "Una hamaca, señora.", next: "r2", good: true },
           { text: "¿Vende tacos?", next: "rd2", good: false,
-            react: "La señora señala la salida con una dignidad tremenda." }
+            react: "La señora señala la salida con una dignidad tremenda.",
+            why: "'Do you sell tacos?' Still asking a textile stand for food. She pointed at the exit with dignity." }
         ]
       },
       rd3: {
@@ -693,7 +757,8 @@ var SCENES = {
         choices: [
           { text: "La hamaca, señora.", next: "r2", good: true },
           { text: "Otro rebozo... digo, un rebozo.", next: "rd3", good: false,
-            react: "«Usted no sabe ni qué quiere.» La señora lo dice con cariño. Casi." }
+            react: "«Usted no sabe ni qué quiere.» La señora lo dice con cariño. Casi.",
+            why: "'Another shawl... I mean, a shawl.' You still don't know what you want, and she knows it." }
         ]
       },
       rd4: {
@@ -702,7 +767,8 @@ var SCENES = {
         choices: [
           { text: "Una hamaca. Y perdón, señora.", next: "r2", good: true },
           { text: "Mi abuela no está cansada.", next: "rd4", good: false,
-            react: "«¡Es una EXPRESIÓN!» La vecina ya trajo su silla para ver." }
+            react: "«¡Es una EXPRESIÓN!» La vecina ya trajo su silla para ver.",
+            why: "'MY grandma isn't tired.' 'Cansada su abuela' was an expression, not a report on your family." }
         ]
       },
       r2: {
@@ -712,9 +778,11 @@ var SCENES = {
           { text: "¿Quinientos? Muy caro, señora.", next: "r3", good: true },
           { text: "Mmm... veo un hilo suelto aquí.", next: "r2f", good: true },
           { text: "Le doy seiscientos.", next: "rd5", good: false,
-            react: "«¡VENDIDO!» Espere... usted solo trae trescientos pesos." },
+            react: "«¡VENDIDO!» Espere... usted solo trae trescientos pesos.",
+            why: "'I'll give you six hundred' — for a 500 price. You haggled UP, and you only carry 300." },
           { text: "Qué fea hamaca.", next: "rd6", good: false,
-            react: "La señora se lleva la mano al pecho. «¡Mis manos LLORARON haciendo esto!»" }
+            react: "La señora se lleva la mano al pecho. «¡Mis manos LLORARON haciendo esto!»",
+            why: "'What an ugly hammock.' Insulting the goods kills a negotiation. Point out a flaw politely instead." }
         ]
       },
       r2c: {
@@ -723,9 +791,11 @@ var SCENES = {
         choices: [
           { text: "¿Me la deja en doscientos?", next: "r5", good: true },
           { text: "¿Cuatrocientos ochenta?", next: "rd8", good: false,
-            react: "«¡Claro que sí!» Espere. Usted acaba de regatear hacia ARRIBA." },
+            react: "«¡Claro que sí!» Espere. Usted acaba de regatear hacia ARRIBA.",
+            why: "She said 450 and you offered 480. Counter-offers go DOWN. 'Ochenta' = 80." },
           { text: "Ya no me gusta.", next: "rd6", good: false,
-            react: "«¿Ya no...? El respeto se fue de esta ciudad.»" }
+            react: "«¿Ya no...? El respeto se fue de esta ciudad.»",
+            why: "'I don't like it anymore.' Fake disinterest right after praising it reads as an insult, not a tactic." }
         ]
       },
       r2f: {
@@ -734,9 +804,11 @@ var SCENES = {
         choices: [
           { text: "¿Me la deja en doscientos cincuenta?", next: "r5", good: true },
           { text: "También huele raro.", next: "rd7", good: false,
-            react: "«¿RARO? Es algodón y sol, criatura.» Sube el precio de puro coraje." },
+            react: "«¿RARO? Es algodón y sol, criatura.» Sube el precio de puro coraje.",
+            why: "'It also smells weird.' One flaw is haggling; two is an insult. She raised the price out of spite." },
           { text: "Entonces regálemela.", next: "rd7", good: false,
-            react: "«¿REGALAR? ¿Trabajo gratis? Ni el gobierno, joven.»" }
+            react: "«¿REGALAR? ¿Trabajo gratis? Ni el gobierno, joven.»",
+            why: "'Then gift it to me.' 'Regalar' = give for free. Craftswomen don't work free; neither does the government." }
         ]
       },
       rd7: {
@@ -745,7 +817,8 @@ var SCENES = {
         choices: [
           { text: "Doscientos. Y perdón, señora.", next: "r4", good: true },
           { text: "¿Sube el precio por ENOJO?", next: "rd7", good: false,
-            react: "«El coraje también es artesanal, joven.»" }
+            react: "«El coraje también es artesanal, joven.»",
+            why: "'You raise the price out of ANGER?' Yes. Her anger is also handmade ('artesanal')." }
         ]
       },
       r3: {
@@ -755,9 +828,11 @@ var SCENES = {
           { text: "¿Me la deja en doscientos?", next: "r4", good: true },
           { text: "Soy estudiante. Doscientos es mi mundo.", next: "r3s", good: true },
           { text: "¿Me la deja en cuatrocientos noventa?", next: "rd8", good: false,
-            react: "«¡Claro que sí!» Espere. Usted acaba de regatear hacia ARRIBA." },
+            react: "«¡Claro que sí!» Espere. Usted acaba de regatear hacia ARRIBA.",
+            why: "'Would you take 490?' — she had said 450. 'Noventa' = 90. You haggled upward again." },
           { text: "Cuatrocientos cincuenta está bien.", next: "rd9", good: false,
-            react: "Usted solo trae trescientos. La señora ya está envolviendo la hamaca." }
+            react: "Usted solo trae trescientos. La señora ya está envolviendo la hamaca.",
+            why: "'450 is fine.' But you only carry 300 pesos. Never accept a price you can't pay." }
         ]
       },
       r3s: {
@@ -766,7 +841,8 @@ var SCENES = {
         choices: [
           { text: "Español. Por eso estoy aquí.", next: "r4s", good: true },
           { text: "Estudio... negocios.", next: "rd10", good: false,
-            react: "«¿NEGOCIOS? Entonces pague quinientos, licenciado.»" }
+            react: "«¿NEGOCIOS? Entonces pague quinientos, licenciado.»",
+            why: "'I study... business.' Sob story ruined — business types ('licenciados') pay full price." }
         ]
       },
       rd10: {
@@ -775,7 +851,8 @@ var SCENES = {
         choices: [
           { text: "Español, señora. Apenas aprendo.", next: "r4s", good: true },
           { text: "Finanzas internacionales.", next: "rd10", good: false,
-            react: "La señora le sube el precio mentalmente cada segundo que pasa." }
+            react: "La señora le sube el precio mentalmente cada segundo que pasa.",
+            why: "'International finance.' The price climbed in her head with every syllable of that." }
         ]
       },
       r4s: {
@@ -786,7 +863,8 @@ var SCENES = {
             react: "«Ay, qué educado.» Le convida un mezcalito. Usted revive." },
           { text: "Trescientos. Es todo lo que traigo.", next: "r6", good: true },
           { text: "¿Trescientos cuarenta?", next: "rd11", good: false,
-            react: "«¿Regatea de diez en diez? Vamos a estar aquí HORAS.»" }
+            react: "«¿Regatea de diez en diez? Vamos a estar aquí HORAS.»",
+            why: "Haggling by tens ('de diez en diez') from 350 wastes everyone's afternoon. Make one honest final offer." }
         ]
       },
       rd11: {
@@ -795,7 +873,8 @@ var SCENES = {
         choices: [
           { text: "Trescientos. Es mi límite real.", next: "r6", good: true },
           { text: "¿Trescientos cuarenta y cinco?", next: "rd11", good: false,
-            react: "La vecina saca palomitas. Esto va para largo." }
+            react: "La vecina saca palomitas. Esto va para largo.",
+            why: "You moved five pesos. The neighbor got popcorn ('palomitas'). That's how slow this is." }
         ]
       },
       r4: {
@@ -805,9 +884,11 @@ var SCENES = {
           { text: "Doscientos cincuenta. Casi todo lo que traigo.", next: "r5", good: true },
           { text: "Mejor me voy. Gracias, señora.", next: "r4w", good: true },
           { text: "¿Sus hijos comen aire?", next: "rd12", good: false,
-            react: "«Es una EXPRESIÓN, criatura.» La vecina ya está grabando." },
+            react: "«Es una EXPRESIÓN, criatura.» La vecina ya está grabando.",
+            why: "'Do your children eat air?' It was an expression — dramatic poverty, not a diet report." },
           { text: "Doscientos... dólares.", next: "rd13", good: false,
-            react: "Los ojos de la señora brillan como el sol. Usted no tiene dólares." }
+            react: "Los ojos de la señora brillan como el sol. Usted no tiene dólares.",
+            why: "'Two hundred... dollars' is about 3,500 pesos. Her eyes lit up; your wallet has zero dollars." }
         ]
       },
       r4w: {
@@ -816,9 +897,11 @@ var SCENES = {
         choices: [
           { text: "Trescientos y cerramos, señora.", next: "r6", good: true },
           { text: "Ahora doscientos, por hacerme caminar.", next: "rd14", good: false,
-            react: "«¿Me castiga? ¡NAYELI, este muchacho me castiga!»" },
+            react: "«¿Me castiga? ¡NAYELI, este muchacho me castiga!»",
+            why: "'Now 200, for making me walk.' Punishing her after she called you back reopens the war. Nayeli was summoned." },
           { text: "No, ya me voy de verdad.", next: "rd15", good: false,
-            react: "Camina diez metros. El sol pega. La hamaca era bonita. Regresa." }
+            react: "Camina diez metros. El sol pega. La hamaca era bonita. Regresa.",
+            why: "'No, now I'm REALLY leaving.' The walk-away card only plays once. The sun and the hammock won." }
         ]
       },
       rd14: {
@@ -827,7 +910,8 @@ var SCENES = {
         choices: [
           { text: "Trescientos. Trato con las dos.", next: "r6", good: true },
           { text: "¿Tú quién eres?", next: "rd14", good: false,
-            react: "«La que cobra.» Nayeli tiene doce años y cero paciencia." }
+            react: "«La que cobra.» Nayeli tiene doce años y cero paciencia.",
+            why: "'Who are YOU?' — to the vendor's daughter. Nayeli is 'la que cobra': the one who collects." }
         ]
       },
       rd15: {
@@ -836,7 +920,8 @@ var SCENES = {
         choices: [
           { text: "Trescientos. De verdad es todo.", next: "r6", good: true },
           { text: "Me voy otra vez.", next: "rd15", good: false,
-            react: "La señora ya ni voltea. Vende dos rebozos mientras usted duda." }
+            react: "La señora ya ni voltea. Vende dos rebozos mientras usted duda.",
+            why: "'I'm leaving again.' Third walk-away. She sold two shawls while you hesitated. Your leverage is gone." }
         ]
       },
       rd5: {
@@ -845,7 +930,8 @@ var SCENES = {
         choices: [
           { text: "Trescientos. Por eso: muy caro.", next: "r3", good: true },
           { text: "Setecientos, en monedas de un peso.", next: "rd5", good: false,
-            react: "La señora extiende la mano y espera. Usted no trae setecientos. Qué pena." }
+            react: "La señora extiende la mano y espera. Usted no trae setecientos. Qué pena.",
+            why: "'Seven hundred, in one-peso coins.' A bluff with money you don't have. She just extended her hand." }
         ]
       },
       rd6: {
@@ -854,7 +940,8 @@ var SCENES = {
         choices: [
           { text: "Sí, es bella. Pero muy cara.", next: "r3", good: true },
           { text: "Es... menos fea.", next: "rd6", good: false,
-            react: "«¿MENOS fea?» La vecina del puesto de al lado dice «uuuuh»." }
+            react: "«¿MENOS fea?» La vecina del puesto de al lado dice «uuuuh».",
+            why: "'It's... less ugly.' 'Menos fea' is not a compliment. The neighbor said 'uuuh' for a reason." }
         ]
       },
       rd8: {
@@ -863,7 +950,8 @@ var SCENES = {
         choices: [
           { text: "Doscientos pesos, señora.", next: "r4", good: true },
           { text: "¿Quinientos veinte?", next: "rd8", good: false,
-            react: "«Este muchacho regatea al revés. ¡NAYELI, VEN A VER!»" }
+            react: "«Este muchacho regatea al revés. ¡NAYELI, VEN A VER!»",
+            why: "'520?' Upward again. 'Regatear al revés' — haggling in reverse — is now your local legend." }
         ]
       },
       rd9: {
@@ -872,7 +960,8 @@ var SCENES = {
         choices: [
           { text: "Doscientos, es lo justo.", next: "r4", good: true },
           { text: "¿Me la fía?", next: "rd9", good: false,
-            react: "«¿Fiar? Ni a mi compadre le fío, y es mi compadre.»" }
+            react: "«¿Fiar? Ni a mi compadre le fío, y es mi compadre.»",
+            why: "'Can I pay later?' 'Fiar' = sell on credit. She won't even fiar her compadre, and that's her compadre." }
         ]
       },
       rd12: {
@@ -881,7 +970,8 @@ var SCENES = {
         choices: [
           { text: "Doscientos cincuenta, señora.", next: "r5", good: true },
           { text: "¿Trescientos mil?", next: "rd12", good: false,
-            react: "«Véndanle ustedes», le dice la señora a nadie en particular." }
+            react: "«Véndanle ustedes», le dice la señora a nadie en particular.",
+            why: "'Three hundred THOUSAND?' 'Mil' = thousand. That buys a car, not a hammock." }
         ]
       },
       rd13: {
@@ -890,7 +980,8 @@ var SCENES = {
         choices: [
           { text: "Doscientos cincuenta.", next: "r5", good: true },
           { text: "Doscientos cincuenta... yenes.", next: "rd13", good: false,
-            react: "La señora empieza a guardar la hamaca muy despacio, mirándolo fijo." }
+            react: "La señora empieza a guardar la hamaca muy despacio, mirándolo fijo.",
+            why: "'250 yen' is about 30 pesos. She started packing the hammock away very slowly." }
         ]
       },
       r5: {
@@ -899,9 +990,11 @@ var SCENES = {
         choices: [
           { text: "Trescientos. Es todo lo que traigo, se lo juro.", next: "r6", good: true },
           { text: "Trescientos sesenta.", next: "rd16", good: false,
-            react: "«¿Otra vez para ARRIBA? Su escuela le debe una disculpa.»" },
+            react: "«¿Otra vez para ARRIBA? Su escuela le debe una disculpa.»",
+            why: "She said 350 and you offered 360 — upward again. 'Sesenta' = 60. Your school owes you an apology." },
           { text: "Mejor me voy.", next: "rd17", good: false,
-            react: "Da tres pasos. «Que le vaya bien», dice la señora, serena. Regresa apenado." }
+            react: "Da tres pasos. «Que le vaya bien», dice la señora, serena. Regresa apenado.",
+            why: "Walking away AFTER 'palabra final' (final word) doesn't work. That card only plays mid-negotiation." }
         ]
       },
       rd16: {
@@ -910,7 +1003,8 @@ var SCENES = {
         choices: [
           { text: "Trescientos, es todo lo que traigo.", next: "r6", good: true },
           { text: "Trescientos cincuenta y cinco.", next: "rd16", good: false,
-            react: "«¡Que es al REVÉS, criatura de Dios!»" }
+            react: "«¡Que es al REVÉS, criatura de Dios!»",
+            why: "355 is still five MORE than her 350. Counters must go down, criatura." }
         ]
       },
       rd17: {
@@ -919,7 +1013,8 @@ var SCENES = {
         choices: [
           { text: "Trescientos. Se lo pido de corazón.", next: "r6", good: true },
           { text: "¿Trescientos veinticinco?", next: "rd17", good: false,
-            react: "«La palabra FINAL no negocia, criatura.»" }
+            react: "«La palabra FINAL no negocia, criatura.»",
+            why: "'325?' Her word was FINAL. 'La palabra final no negocia' — the final word doesn't negotiate." }
         ]
       },
       r6: {
@@ -929,9 +1024,11 @@ var SCENES = {
           { text: "Gracias, señora. Es usted un ángel.", next: "win", good: true },
           { text: "¿Y de pilón un llaverito?", next: "r6p", good: true },
           { text: "¿Me da dos por trescientos?", next: "rd18", good: false,
-            react: "«¡FUERA DE MI...!» Respira. «No, corazón.»" },
+            react: "«¡FUERA DE MI...!» Respira. «No, corazón.»",
+            why: "'Two for 300?' After winning the deal, you asked to double it. She nearly threw you out." },
           { text: "Sabía que aceptaría.", next: "rd19", good: false,
-            react: "«¿Ah, sí? Cuatrocientos otra vez.» Su sonrisa da miedo." }
+            react: "«¿Ah, sí? Cuatrocientos otra vez.» Su sonrisa da miedo.",
+            why: "'I knew you'd accept.' Gloating reopened negotiations — at 400. Grace matters after a win." }
         ]
       },
       r6p: {
@@ -940,7 +1037,8 @@ var SCENES = {
         choices: [
           { text: "¡Gracias! Aquí tiene los trescientos.", next: "win", good: true },
           { text: "¿Y dos llaveritos?", next: "r6p", good: false,
-            react: "«El pilón no se regatea, criatura.»" }
+            react: "«El pilón no se regatea, criatura.»",
+            why: "'And TWO keychains?' The pilón is a gift, not a negotiation. 'El pilón no se regatea.'" }
         ]
       },
       rd18: {
@@ -949,7 +1047,8 @@ var SCENES = {
         choices: [
           { text: "Trato. Gracias, señora.", next: "win", good: true },
           { text: "¿Me da factura?", next: "rd18", good: false,
-            react: "«¿FACTURA? Aquí la factura es mi palabra, joven.»" }
+            react: "«¿FACTURA? Aquí la factura es mi palabra, joven.»",
+            why: "'Can I get an invoice?' 'Factura' = receipt/invoice. In a street market, her word IS the receipt." }
         ]
       },
       rd19: {
@@ -958,7 +1057,8 @@ var SCENES = {
         choices: [
           { text: "Trato, señora. Gracias.", next: "win", good: true },
           { text: "Sabía que era broma.", next: "rd19", good: false,
-            react: "«Este muchacho no aprende», le dice la señora a su hamaca." }
+            react: "«Este muchacho no aprende», le dice la señora a su hamaca.",
+            why: "'I knew it was a joke.' More gloating. She now discusses you directly with the hammock." }
         ]
       }
     }
@@ -993,9 +1093,11 @@ var SCENES = {
           { text: "A la central de autobuses, por favor.", next: "x2", good: true },
           { text: "A la central. ¿Sabe cuánto tarda?", next: "x1r", good: true },
           { text: "Al banco de autobuses.", next: "xd1", good: false,
-            react: "«¿El banco? Los camiones no dan crédito, jefe.»" },
+            react: "«¿El banco? Los camiones no dan crédito, jefe.»",
+            why: "'To the bus BANK.' 'Banco' = bank. You wanted 'la central de autobuses' — the bus station." },
           { text: "A México, rápido.", next: "xd2", good: false,
-            react: "«¿A México? Seis horas, jefe. ¿Trae para la caseta?»" }
+            react: "«¿A México? Seis horas, jefe. ¿Trae para la caseta?»",
+            why: "'To Mexico, fast.' You're IN Mexico — Guadalajara. Locals say 'México' for Mexico City: six hours away." }
         ]
       },
       x1r: {
@@ -1004,9 +1106,11 @@ var SCENES = {
         choices: [
           { text: "Perfecto, vámonos.", next: "x2", good: true },
           { text: "¿Y si Dios no quiere?", next: "x1r", good: false,
-            react: "«Entonces conocemos Guadalajara juntos, jefe.»" },
+            react: "«Entonces conocemos Guadalajara juntos, jefe.»",
+            why: "'And if God doesn't want?' 'Si Dios quiere' is filler, like 'hopefully'. Don't debate the theology." },
           { text: "¿'Minutitos' son más cortos?", next: "x1r", good: false,
-            react: "«...Filosóficamente, sí.» El taxista arranca sin esperar respuesta." }
+            react: "«...Filosóficamente, sí.» El taxista arranca sin esperar respuesta.",
+            why: "The -ito ending is affectionate, not metric. Twenty 'minutitos' are still twenty minutes." }
         ]
       },
       xd1: {
@@ -1015,7 +1119,8 @@ var SCENES = {
         choices: [
           { text: "Sí, eso. La central, por favor.", next: "x2", good: true },
           { text: "No, el banco. Donde duermen los autobuses.", next: "xd1", good: false,
-            react: "El taxista lo mira por el retrovisor un rato largo." }
+            react: "El taxista lo mira por el retrovisor un rato largo.",
+            why: "'Where the buses sleep' is a depot, and 'banco' is still a bank. The mirror stare was earned." }
         ]
       },
       xd2: {
@@ -1024,7 +1129,8 @@ var SCENES = {
         choices: [
           { text: "A la central de autobuses, por favor.", next: "x2", good: true },
           { text: "¿Esto no es México?", next: "xd2", good: false,
-            react: "«Es Guadalajara. México el país, sí. La ciudad, no, jefe.»" }
+            react: "«Es Guadalajara. México el país, sí. La ciudad, no, jefe.»",
+            why: "'Isn't this Mexico?' The country, yes. 'México' the CITY, no. Context decides which one people mean." }
         ]
       },
       x2: {
@@ -1033,9 +1139,11 @@ var SCENES = {
         choices: [
           { text: "A las cuatro. ¿Llegamos?", next: "x3", good: true },
           { text: "Sale a las cuarenta.", next: "xd3", good: false,
-            react: "«¿A las cuarenta? Ese camión no existe ni en Japón, jefe.»" },
+            react: "«¿A las cuarenta? Ese camión no existe ni en Japón, jefe.»",
+            why: "'It leaves at forty.' 'Cuarenta' = 40; clock hours stop at twelve. You wanted 'a las cuatro' (at four)." },
           { text: "No sé. ¿Usted a qué hora sale?", next: "xd4", good: false,
-            react: "«¿Yo? Yo nunca salgo. Yo soy el taxi.» Filosofía pura." }
+            react: "«¿Yo? Yo nunca salgo. Yo soy el taxi.» Filosofía pura.",
+            why: "'What time do YOU leave?' He never leaves. He is the taxi. Pure philosophy." }
         ]
       },
       xd3: {
@@ -1044,7 +1152,8 @@ var SCENES = {
         choices: [
           { text: "Perdón, a las cuatro.", next: "x3", good: true },
           { text: "A las... ¿cuarenta y cinco?", next: "xd3", good: false,
-            react: "El taxista sube el volumen de la radio, despacito." }
+            react: "El taxista sube el volumen de la radio, despacito.",
+            why: "'At... forty-five?' Still not a clock time. 'Las cuatro' is 4:00; 'cuarenta y cinco' is 45." }
         ]
       },
       xd4: {
@@ -1053,7 +1162,8 @@ var SCENES = {
         choices: [
           { text: "A las cuatro de la tarde.", next: "x3", good: true },
           { text: "Los camiones son un misterio.", next: "xd4", good: false,
-            react: "«Muy poeta usted, pero el reloj no perdona, jefe.»" }
+            react: "«Muy poeta usted, pero el reloj no perdona, jefe.»",
+            why: "'Buses are a mystery.' Poetic, but he needed a departure time and the clock doesn't forgive." }
         ]
       },
       x3: {
@@ -1063,9 +1173,11 @@ var SCENES = {
           { text: "Por el centro, es más corto, ¿no?", next: "c1", good: true },
           { text: "Por periférico, más seguro.", next: "p1", good: true },
           { text: "Por el mar.", next: "xd5", good: false,
-            react: "«¿El MAR? Guadalajara no tiene mar, jefe. Tenemos ganas, pero no mar.»" },
+            react: "«¿El MAR? Guadalajara no tiene mar, jefe. Tenemos ganas, pero no mar.»",
+            why: "'By sea.' Guadalajara is 200 km inland. They have the desire ('ganas'), not the sea." },
           { text: "Usted es el taxi, no me pregunte.", next: "xd6", good: false,
-            react: "«El taxi tiene sentimientos, jefe.» Silencio." }
+            react: "«El taxi tiene sentimientos, jefe.» Silencio.",
+            why: "'You're the taxi, don't ask me.' Dismissing his question was cold. The taxi has feelings." }
         ]
       },
       xd5: {
@@ -1074,7 +1186,8 @@ var SCENES = {
         choices: [
           { text: "Por periférico, usted decide el resto.", next: "p1", good: true },
           { text: "¿Y en helicóptero?", next: "xd5", good: false,
-            react: "«Claro. Deme cinco millones de pesos y un helicóptero.»" }
+            react: "«Claro. Deme cinco millones de pesos y un helicóptero.»",
+            why: "'By helicopter?' Sure — for five million pesos and a helicopter. Pick a land option." }
         ]
       },
       xd6: {
@@ -1083,7 +1196,8 @@ var SCENES = {
         choices: [
           { text: "Centro, por favor. Y perdón.", next: "c1", good: true },
           { text: "El que sea más barato.", next: "xd6", good: false,
-            react: "«Cuestan igual, jefe: sesenta pesos y su paciencia.»" }
+            react: "«Cuestan igual, jefe: sesenta pesos y su paciencia.»",
+            why: "'Whichever is cheaper.' They cost the same: sixty pesos and your patience." }
         ]
       },
 
@@ -1094,9 +1208,11 @@ var SCENES = {
         choices: [
           { text: "No lo vi. ¿Ganaron?", next: "c2", good: true },
           { text: "El fútbol es aburrido.", next: "cd1", good: false,
-            react: "El taxi frena suavecito. El silencio pesa como piedra." },
+            react: "El taxi frena suavecito. El silencio pesa como piedra.",
+            why: "'Soccer is boring' — said to a Guadalajara taxi driver. That's not an opinion here, it's an incident." },
           { text: "¡Viva el América!", next: "cd2", good: false,
-            react: "«¿AMÉRICA? Bájese.» Pausa. «Es broma. Pero duele, jefe.»" }
+            react: "«¿AMÉRICA? Bájese.» Pausa. «Es broma. Pero duele, jefe.»",
+            why: "América is Chivas' archrival. You cheered the enemy in his taxi. 'Bájese' = get out (mostly a joke)." }
         ]
       },
       cd1: {
@@ -1105,7 +1221,8 @@ var SCENES = {
         choices: [
           { text: "Perdón. ¿Cómo van las Chivas?", next: "c2", good: true },
           { text: "Prefiero el golf.", next: "cd1", good: false,
-            react: "«¿GOLF?» El taxista baja diez kilómetros por hora, de puro luto." }
+            react: "«¿GOLF?» El taxista baja diez kilómetros por hora, de puro luto.",
+            why: "'I prefer golf.' He slowed down ten km/h out of mourning ('luto'). Respect the fútbol." }
         ]
       },
       cd2: {
@@ -1114,7 +1231,8 @@ var SCENES = {
         choices: [
           { text: "Clarísimo. ¡Vamos Chivas!", next: "c2", good: true },
           { text: "Bueno, ¿y qué es una chiva?", next: "cd2", good: false,
-            react: "«¿QUÉ ES...?» El taxista se estaciona un momento para procesar." }
+            react: "«¿QUÉ ES...?» El taxista se estaciona un momento para procesar.",
+            why: "'What's a chiva?' A goat — and THE team of Guadalajara. He parked just to process your question." }
         ]
       },
       c2: {
@@ -1125,9 +1243,11 @@ var SCENES = {
           { text: "Tranquilo. ¿Una quesadilla rápida? Yo invito.", next: "c3", good: true, heal: true,
             react: "El taxista sonríe. «Usted SÍ sabe viajar.» Comen en dos minutos y él se sabe un atajo." },
           { text: "¡Atraviese el tianguis!", next: "cd3", good: false,
-            react: "«¿ATRAVESAR? Ahí venden quesadillas, jefe, no es pista.»" },
+            react: "«¿ATRAVESAR? Ahí venden quesadillas, jefe, no es pista.»",
+            why: "'Drive THROUGH the street market!' A tianguis is stalls and people. It sells quesadillas; it's not a racetrack." },
           { text: "Me bajo aquí y camino.", next: "cd4", good: false,
-            react: "«Son tres kilómetros con maletas, jefe.» Usted mira sus maletas. Se queda." }
+            react: "«Son tres kilómetros con maletas, jefe.» Usted mira sus maletas. Se queda.",
+            why: "'I'll get out and walk' — three kilometers, with luggage, against the clock. You looked at your bags and stayed." }
         ]
       },
       cd3: {
@@ -1136,7 +1256,8 @@ var SCENES = {
         choices: [
           { text: "Sí, otra calle, por favor.", next: "c3", good: true },
           { text: "Cómpreme una quesadilla al menos.", next: "cd3", good: false,
-            react: "El taxista lo considera. El reloj dice tres treinta y cinco. No." }
+            react: "El taxista lo considera. El reloj dice tres treinta y cinco. No.",
+            why: "'At least buy ME a quesadilla.' Passengers don't invoice the driver. Also it's 3:35 — no time." }
         ]
       },
       cd4: {
@@ -1145,7 +1266,8 @@ var SCENES = {
         choices: [
           { text: "Sí, busque otra calle, por favor.", next: "c3", good: true },
           { text: "¿Y si vendo las maletas?", next: "cd4", good: false,
-            react: "«¿Para qué quiere ir a la central sin maletas, jefe?» Punto." }
+            react: "«¿Para qué quiere ir a la central sin maletas, jefe?» Punto.",
+            why: "'What if I sell the luggage?' Then you arrive at the station with nothing to put on the bus. Punto." }
         ]
       },
       c3: {
@@ -1154,9 +1276,11 @@ var SCENES = {
         choices: [
           { text: "Derecho: siga recto, sin vuelta.", next: "xf1", good: true },
           { text: "Derecho y derecha es lo mismo.", next: "cd5", good: false,
-            react: "«¡NO es lo mismo!» Da vuelta por si acaso. Plaza equivocada." },
+            react: "«¡NO es lo mismo!» Da vuelta por si acaso. Plaza equivocada.",
+            why: "It is NOT the same: 'derecho' = straight ahead; 'a la derecha' = turn right. One vowel, wrong plaza." },
           { text: "Dé vuelta a la derecha.", next: "cd6", good: false,
-            react: "Vuelta a la derecha. Una plaza llena de palomas. Ni una central." }
+            react: "Vuelta a la derecha. Una plaza llena de palomas. Ni una central.",
+            why: "'Turn right.' The GPS said 'derecho' — straight. You turned it into 'derecha' and found only pigeons." }
         ]
       },
       cd5: {
@@ -1165,7 +1289,8 @@ var SCENES = {
         choices: [
           { text: "Derecho, recto, sin vuelta.", next: "xf1", good: true },
           { text: "Izquierda, para estar seguros.", next: "cd5", good: false,
-            react: "«¿IZQUIERDA?» El taxista aprieta el volante con cariño y dolor." }
+            react: "«¿IZQUIERDA?» El taxista aprieta el volante con cariño y dolor.",
+            why: "'Left, to be safe.' The GPS said straight. Inventing a third direction is not safety." }
         ]
       },
       cd6: {
@@ -1174,7 +1299,8 @@ var SCENES = {
         choices: [
           { text: "Sí, derecho hasta la central.", next: "xf1", good: true },
           { text: "¿Podemos ver las palomas?", next: "cd6", good: false,
-            react: "«Su camión sale a las cuatro. Las palomas no venden boletos, jefe.»" }
+            react: "«Su camión sale a las cuatro. Las palomas no venden boletos, jefe.»",
+            why: "'Can we watch the pigeons?' Your bus leaves at four. Pigeons sell no tickets." }
         ]
       },
 
@@ -1186,9 +1312,11 @@ var SCENES = {
           { text: "Claro, póngale.", next: "p2", good: true },
           { text: "Mejor platíqueme de Guadalajara.", next: "p2b", good: true },
           { text: "¿Qué es un CD?", next: "pd1", good: false,
-            react: "El taxista frena tantito. «¿Qué edad tiene usted, jefe?»" },
+            react: "El taxista frena tantito. «¿Qué edad tiene usted, jefe?»",
+            why: "'What's a CD?' You wounded a man mid-kindness. He tapped the brakes and asked your age." },
           { text: "Silencio, por favor.", next: "pd2", good: false,
-            react: "«...Va.» El silencio es tan incómodo que hasta el motor baja la voz." }
+            react: "«...Va.» El silencio es tan incómodo que hasta el motor baja la voz.",
+            why: "'Silence, please.' Legal, but small talk is part of the ride here. Even the engine felt awkward." }
         ]
       },
       pd1: {
@@ -1197,7 +1325,8 @@ var SCENES = {
         choices: [
           { text: "Póngale, por favor.", next: "p2", good: true },
           { text: "¿Tiene Bluetooth?", next: "pd1", good: false,
-            react: "«El CD no falla, jefe. Su Bluetooth, sí.» Debate perdido." }
+            react: "«El CD no falla, jefe. Su Bluetooth, sí.» Debate perdido.",
+            why: "'Got Bluetooth?' In this taxi the CD never fails — your Bluetooth does. Debate lost." }
         ]
       },
       pd2: {
@@ -1206,7 +1335,8 @@ var SCENES = {
         choices: [
           { text: "Tiene razón. Póngale su Maná.", next: "p2", good: true },
           { text: "El silencio es oro.", next: "pd2", good: false,
-            react: "El taxista tararea por dentro. Se le nota. Sufre." }
+            react: "El taxista tararea por dentro. Se le nota. Sufre.",
+            why: "'Silence is golden.' He hummed internally. You could see him suffer. Twenty minutes is long." }
         ]
       },
       p2: {
@@ -1217,7 +1347,8 @@ var SCENES = {
             react: "Cantan el coro juntos. El taxista casi llora. Son hermanos ahora." },
           { text: "No, pero me gusta.", next: "p3", good: true },
           { text: "¿San Blas? ¿El santo del rock?", next: "pd3", good: false,
-            react: "«...El muelle, jefe. Es un LUGAR.» Se le baja la inspiración." }
+            react: "«...El muelle, jefe. Es un LUGAR.» Se le baja la inspiración.",
+            why: "'San Blas... the saint of rock?' It's a beach town in Nayarit — the pier in Maná's most famous song." }
         ]
       },
       pd3: {
@@ -1226,7 +1357,8 @@ var SCENES = {
         choices: [
           { text: "Sí, me gusta. Siga cantando.", next: "p3", good: true },
           { text: "¿Nayarit es una persona?", next: "pd3", good: false,
-            react: "El taxista apaga el CD. Ya no hay música para usted." }
+            react: "El taxista apaga el CD. Ya no hay música para usted.",
+            why: "'Is Nayarit a person?' It's a Mexican state. The CD went off. There is no music for you now." }
         ]
       },
       p2b: {
@@ -1235,7 +1367,8 @@ var SCENES = {
         choices: [
           { text: "¡Claro, el equipo! ¿Cómo van?", next: "p3", good: true },
           { text: "¿Las chivas... los animales?", next: "pd4", good: false,
-            react: "«El EQUIPO, jefe. El más grande de México.» Se persigna." }
+            react: "«El EQUIPO, jefe. El más grande de México.» Se persigna.",
+            why: "'Chivas... the animals?' Goats, yes — but here it means THE team. He crossed himself for your soul." }
         ]
       },
       pd4: {
@@ -1244,7 +1377,8 @@ var SCENES = {
         choices: [
           { text: "Ahora sí. ¿Van ganando?", next: "p3", good: true },
           { text: "Prefiero las cabras de verdad.", next: "pd4", good: false,
-            react: "«...Las cabras no meten goles, jefe.» Filosofía dura." }
+            react: "«...Las cabras no meten goles, jefe.» Filosofía dura.",
+            why: "'I prefer real goats.' Real goats score no goals ('no meten goles'). Hard philosophy." }
         ]
       },
       p3: {
@@ -1254,7 +1388,8 @@ var SCENES = {
           { text: "Va, pero rápido, por favor.", next: "xf1", good: true },
           { text: "¿Llegamos a tiempo si paramos?", next: "p3r", good: true },
           { text: "¡No! ¡Siga sin gasolina!", next: "pd5", good: false,
-            react: "«¿Sin gasolina? La física no negocia, jefe.»" }
+            react: "«¿Sin gasolina? La física no negocia, jefe.»",
+            why: "'Keep driving without gas!' Physics doesn't negotiate ('no negocia'). Two minutes beats zero kilometers." }
         ]
       },
       p3r: {
@@ -1263,7 +1398,8 @@ var SCENES = {
         choices: [
           { text: "Va. Dos minutos.", next: "xf1", good: true },
           { text: "No confío en nadie.", next: "p3r", good: false,
-            react: "«Qué vida tan pesada la suya, jefe.» Para en la bomba de todos modos." }
+            react: "«Qué vida tan pesada la suya, jefe.» Para en la bomba de todos modos.",
+            why: "'I trust no one.' A heavy way to live ('qué vida tan pesada'). He stopped for gas anyway." }
         ]
       },
       pd5: {
@@ -1272,7 +1408,8 @@ var SCENES = {
         choices: [
           { text: "Va, perdón. Rápido.", next: "xf1", good: true },
           { text: "Empujamos el taxi entre los dos.", next: "pd5", good: false,
-            react: "El taxista se imagina la escena. Casi sonríe. Casi." }
+            react: "El taxista se imagina la escena. Casi sonríe. Casi.",
+            why: "'We'll push the taxi together.' He pictured it. He almost smiled. The pump still won." }
         ]
       },
 
@@ -1284,9 +1421,11 @@ var SCENES = {
           { text: "Aquí tiene setenta. Gracias por todo.", next: "win", good: true },
           { text: "¡Tenga cien! ¡No hay tiempo para cambio!", next: "win", good: true },
           { text: "Tenga, dieciséis pesos.", next: "xd9", good: false,
-            react: "«¿DieciSÉIS? Se-SEN-ta, jefe. Casi me da algo.»" },
+            react: "«¿DieciSÉIS? Se-SEN-ta, jefe. Casi me da algo.»",
+            why: "'Here's sixteen.' 'Sesenta' (60) vs 'dieciséis' (16) — the classic numbers mix-up. He nearly had 'algo' (a heart attack)." },
           { text: "Se lo pago mañana.", next: "xd10", good: false,
-            react: "«¿Mañana? Mañana usted está en otra ciudad, jefe.»" }
+            react: "«¿Mañana? Mañana usted está en otra ciudad, jefe.»",
+            why: "'I'll pay you tomorrow.' Tomorrow you're in another city, and he knows it. Cash, now." }
         ]
       },
       xd9: {
@@ -1295,7 +1434,8 @@ var SCENES = {
         choices: [
           { text: "Perdón. Aquí tiene setenta.", next: "win", good: true },
           { text: "Tenga diecisiete.", next: "xd9", good: false,
-            react: "El taxista mira el reloj: tres cincuenta y siete. Usted juega con fuego." }
+            react: "El taxista mira el reloj: tres cincuenta y siete. Usted juega con fuego.",
+            why: "Seventeen is one peso closer to sixty. At 3:57, you are playing with fire." }
         ]
       },
       xd10: {
@@ -1304,7 +1444,8 @@ var SCENES = {
         choices: [
           { text: "Aquí tiene setenta, quédese el cambio.", next: "win", good: true },
           { text: "¿Acepta autógrafos?", next: "xd10", good: false,
-            react: "«¿De quién? ¿De usted? Jefe, ni sé cómo se llama.»" }
+            react: "«¿De quién? ¿De usted? Jefe, ni sé cómo se llama.»",
+            why: "'Do you take autographs?' He doesn't know your name. Nobody here does. Sixty pesos." }
         ]
       }
     }
@@ -1391,7 +1532,7 @@ function showHome() {
 function startScene(key) {
   runId++;
   const scene = SCENES[key];
-  S = { key, scene, nodeId: null, hearts: 3, lifelines: 2, streak: 0, turns: 0, lifelinesUsed: 0, transShown: false };
+  S = { key, scene, nodeId: null, hearts: 3, lifelines: 2, streak: 0, turns: 0, lifelinesUsed: 0, transShown: false, mistakes: [] };
   busy = false;
   hideLookup();
   document.documentElement.style.setProperty("--accent", scene.color);
@@ -1511,9 +1652,15 @@ function pick(c) {
     if (navigator.vibrate) navigator.vibrate(70);
     later(wait(500), () => {
       chat.appendChild(text("div", "line", c.react));
+      if (c.why) {
+        S.mistakes.push([c.text, c.why]);
+        const btn = text("button", "whyb", "🤔 ¿Qué pasó?");
+        btn.addEventListener("click", () => btn.replaceWith(text("div", "why", "🤔 " + c.why)));
+        chat.appendChild(btn);
+      }
       scrollChat();
-      if (S.hearts <= 0) later(wait(1100), () => endScene(false));
-      else later(wait(1000), () => goto(c.next));
+      if (S.hearts <= 0) later(wait(1400), () => endScene(false));
+      else later(wait(1300), () => goto(c.next));
     });
   }
 }
@@ -1654,6 +1801,21 @@ function endScene(won) {
         v.appendChild(row);
       }
       sheet.appendChild(v);
+    }
+
+    if (S.mistakes.length) {
+      const o = el("div", "vocab oops");
+      o.appendChild(text("h3", null, "Tus errores"));
+      const seen = new Set();
+      for (const [es, en] of S.mistakes) {
+        if (seen.has(es)) continue;
+        seen.add(es);
+        const row = el("div", "row");
+        row.appendChild(text("span", "es", "«" + es + "»"));
+        row.appendChild(text("span", "en", en));
+        o.appendChild(row);
+      }
+      sheet.appendChild(o);
     }
 
     const btns = el("div", "btns");
