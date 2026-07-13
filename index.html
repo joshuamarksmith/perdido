@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#16121a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>¡PERDIDO!</title>
+<style>
+  :root{
+    --bg:#16121a; --panel:#201a26; --panel-2:#2a2331; --line:#3a3142;
+    --text:#f2edf5; --muted:#a89bb3; --accent:#e5484d;
+    --radius:18px;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; }
+  body{
+    margin:0; background:#0e0b11; color:var(--text);
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display:flex; justify-content:center; overflow:hidden;
+  }
+  #app{
+    width:100%; max-width:520px; height:100dvh; display:flex; flex-direction:column;
+    background:linear-gradient(180deg, var(--bg) 0%, #191320 100%);
+    position:relative; overflow:hidden;
+  }
+  @media (min-width:560px){ #app{ border-left:1px solid var(--line); border-right:1px solid var(--line); } }
+  button{
+    font:inherit; color:inherit; border:0; background:none; cursor:pointer;
+    touch-action:manipulation; user-select:none; -webkit-user-select:none;
+  }
+
+  /* ---------- top bar ---------- */
+  #topbar{
+    display:none; align-items:center; gap:10px;
+    padding:10px 14px; padding-top:calc(10px + env(safe-area-inset-top));
+    background:color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line); z-index:5;
+  }
+  #btn-home{ font-size:20px; line-height:1; padding:6px 4px; color:var(--muted); }
+  #hearts{ font-size:15px; letter-spacing:1px; white-space:nowrap; }
+  #hearts .lost{ filter:grayscale(1) brightness(.55); }
+  #goal-chip{
+    flex:1; min-width:0; text-align:center; font-size:13px; font-weight:600;
+    padding:6px 10px; border-radius:999px;
+    border:1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    background:color-mix(in srgb, var(--accent) 14%, transparent);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  #streak-chip{ font-size:13px; font-weight:700; display:none; white-space:nowrap; }
+  #btn-lifeline{
+    font-size:14px; font-weight:700; padding:7px 11px; border-radius:999px;
+    border:1px solid var(--line); background:var(--panel); white-space:nowrap;
+    transition:transform .1s ease, opacity .2s;
+  }
+  #btn-lifeline:active{ transform:scale(.94); }
+  #btn-lifeline.off{ opacity:.35; pointer-events:none; }
+
+  /* ---------- chat ---------- */
+  #chat{
+    flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+    display:none; flex-direction:column; gap:10px; padding:16px 14px 8px;
+  }
+  .bubble{
+    max-width:82%; padding:11px 14px; font-size:16px; line-height:1.45;
+    animation:pop .28s cubic-bezier(.2,.9,.3,1.2) both;
+  }
+  .npc{
+    align-self:flex-start; background:var(--panel-2); color:var(--text);
+    border-radius:var(--radius) var(--radius) var(--radius) 6px;
+    box-shadow:0 1px 2px rgba(0,0,0,.25);
+  }
+  .me{
+    align-self:flex-end; color:#fff;
+    background:linear-gradient(160deg, var(--accent), color-mix(in srgb, var(--accent) 72%, #000));
+    border-radius:var(--radius) var(--radius) 6px var(--radius);
+  }
+  .line{
+    align-self:center; text-align:center; max-width:90%;
+    font-size:13.5px; color:var(--muted); font-style:italic; line-height:1.5;
+    animation:pop .28s ease both;
+  }
+  .line.obj{
+    font-style:normal; font-weight:700; color:var(--text); font-size:14px;
+    padding:7px 14px; border-radius:999px;
+    border:1px dashed color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+  .line.hype{
+    font-style:normal; font-weight:800; font-size:17px; color:var(--accent);
+    animation:hype .5s cubic-bezier(.2,.9,.3,1.4) both;
+  }
+  .trans{
+    align-self:flex-start; max-width:82%; margin-top:-4px;
+    font-size:13.5px; color:var(--muted); padding:9px 13px; line-height:1.45;
+    border:1px dashed var(--line); border-radius:6px var(--radius) var(--radius) var(--radius);
+    animation:pop .28s ease both;
+  }
+  .typing span{
+    display:inline-block; width:7px; height:7px; margin:2px 2px; border-radius:50%;
+    background:var(--muted); animation:blink 1s infinite;
+  }
+  .typing span:nth-child(2){ animation-delay:.18s; }
+  .typing span:nth-child(3){ animation-delay:.36s; }
+
+  /* ---------- choices ---------- */
+  #choices{
+    display:none; flex-direction:column; gap:9px;
+    padding:12px 14px calc(14px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--line);
+    background:color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  }
+  .choice{
+    display:flex; align-items:center; gap:11px; text-align:left; width:100%;
+    min-height:54px; padding:12px 14px; font-size:15.5px; line-height:1.35;
+    background:var(--panel); border:1px solid var(--line); border-radius:16px;
+    transition:transform .08s ease, border-color .15s, background .15s;
+    animation:rise .3s ease both;
+  }
+  .choice:nth-child(2){ animation-delay:.06s; }
+  .choice:nth-child(3){ animation-delay:.12s; }
+  .choice:nth-child(4){ animation-delay:.18s; }
+  .choice:active{ transform:scale(.975); background:var(--panel-2); border-color:var(--accent); }
+  .choice .num{
+    flex:none; width:22px; height:22px; border-radius:7px; font-size:12px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--muted); background:var(--panel-2);
+  }
+  @media (pointer:coarse){ .choice .num{ display:none; } }
+
+  /* ---------- home ---------- */
+  #home{
+    flex:1; display:flex; flex-direction:column; justify-content:center; gap:12px;
+    padding:24px 20px calc(24px + env(safe-area-inset-bottom));
+    padding-top:calc(24px + env(safe-area-inset-top));
+    overflow-y:auto;
+  }
+  #home h1{
+    margin:0; font-size:44px; letter-spacing:-1px; text-align:center;
+    text-shadow:0 3px 0 rgba(0,0,0,.35);
+  }
+  #home .tag{ margin:0 0 18px; text-align:center; color:var(--muted); font-size:15px; }
+  .card{
+    display:flex; align-items:center; gap:14px; width:100%; text-align:left;
+    padding:16px; border-radius:18px; background:var(--panel);
+    border:1px solid var(--line); border-left:5px solid var(--c);
+    transition:transform .08s ease; animation:rise .35s ease both;
+  }
+  .card:nth-child(4){ animation-delay:.07s; }
+  .card:nth-child(5){ animation-delay:.14s; }
+  .card:active{ transform:scale(.975); }
+  .card .emoji{ font-size:34px; }
+  .card b{ display:block; font-size:17px; }
+  .card small{ color:var(--muted); font-size:13px; }
+  .card .dif{ margin-left:auto; font-size:12px; color:var(--c); font-weight:700; white-space:nowrap; }
+  #home .foot{ text-align:center; color:var(--muted); font-size:12px; margin-top:14px; }
+
+  /* ---------- end overlay ---------- */
+  #overlay{
+    position:absolute; inset:0; z-index:20; display:none;
+    align-items:flex-end; justify-content:center;
+    background:rgba(10,7,13,.62); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+  }
+  #overlay .sheet{
+    width:100%; max-height:88%; overflow-y:auto;
+    background:var(--panel); border-radius:24px 24px 0 0;
+    padding:26px 22px calc(24px + env(safe-area-inset-bottom));
+    animation:sheet .35s cubic-bezier(.2,.9,.3,1.1) both;
+  }
+  #overlay h2{ margin:0 0 4px; font-size:26px; text-align:center; }
+  #overlay .sub{ margin:0 0 18px; text-align:center; color:var(--muted); font-size:14.5px; line-height:1.5; }
+  .stats{ display:flex; gap:9px; margin-bottom:18px; }
+  .stat{
+    flex:1; text-align:center; padding:12px 6px; border-radius:14px;
+    background:var(--panel-2); border:1px solid var(--line);
+  }
+  .stat b{ display:block; font-size:20px; }
+  .stat small{ color:var(--muted); font-size:11.5px; }
+  .vocab h3{ margin:0 0 10px; font-size:14px; color:var(--accent); text-transform:uppercase; letter-spacing:1px; }
+  .vocab .row{
+    display:flex; justify-content:space-between; gap:12px; padding:8px 2px;
+    border-bottom:1px solid var(--line); font-size:14.5px;
+  }
+  .vocab .row:last-child{ border-bottom:0; }
+  .vocab .es{ font-weight:700; }
+  .vocab .en{ color:var(--muted); text-align:right; }
+  .btns{ display:flex; gap:10px; margin-top:20px; }
+  .btn{
+    flex:1; min-height:52px; border-radius:16px; font-size:16px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .08s ease;
+  }
+  .btn:active{ transform:scale(.96); }
+  .btn.primary{ background:var(--accent); color:#fff; }
+  .btn.ghost{ background:var(--panel-2); border:1px solid var(--line); }
+
+  /* ---------- fx ---------- */
+  .shake{ animation:shake .4s ease; }
+  #confetti{ position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:30; }
+  #confetti i{
+    position:absolute; top:-14px; width:9px; height:13px; border-radius:2px;
+    animation:fall linear both;
+  }
+  @keyframes pop{ from{ opacity:0; transform:translateY(10px) scale(.96); } to{ opacity:1; transform:none; } }
+  @keyframes rise{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:none; } }
+  @keyframes hype{ 0%{ opacity:0; transform:scale(.4); } 60%{ transform:scale(1.15); } 100%{ opacity:1; transform:scale(1); } }
+  @keyframes blink{ 0%,80%,100%{ opacity:.25; } 40%{ opacity:1; } }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); } 15%{ transform:translateX(-8px); } 35%{ transform:translateX(7px); }
+    55%{ transform:translateX(-5px); } 75%{ transform:translateX(3px); }
+  }
+  @keyframes sheet{ from{ transform:translateY(60px); opacity:0; } to{ transform:none; opacity:1; } }
+  @keyframes fall{
+    from{ transform:translateY(-5vh) rotate(0turn); opacity:1; }
+    to{ transform:translateY(105vh) rotate(2.5turn); opacity:.9; }
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{ animation-duration:.01s !important; animation-delay:0s !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <button id="btn-home" aria-label="Escenas">‹</button>
+    <span id="hearts"></span>
+    <span id="goal-chip"></span>
+    <span id="streak-chip"></span>
+    <button id="btn-lifeline">🌵 2</button>
+  </div>
+  <div id="home"></div>
+  <div id="chat" aria-live="polite"></div>
+  <div id="choices"></div>
+  <div id="overlay"><div class="sheet"></div></div>
+  <div id="confetti"></div>
+</div>
+
+<script>
+"use strict";
+
+/* ================= SCENES (all content lives here) ================= */
+var SCENES = {
+
+  taqueria: {
+    title: "La Taquería",
+    place: "CDMX",
+    dif: 1,
+    emoji: "🌮",
+    color: "#e5484d",
+    goal: "🌮 Comprar 3 tacos al pastor",
+    intro: "CDMX, de noche. Un puesto de tacos brilla en la esquina. Huele a gloria.",
+    winText: "El taquero le entrega tres tacos perfectos. «¡Provecho, güero!» El primer bocado es gloria.",
+    failText: "Te fuiste caminando, confundido y con hambre. A dos cuadras, un perro te ladró en español.",
+    vocab: [
+      ["al pastor", "spit-roasted pork with pineapple"],
+      ["con todo", "with onion and cilantro"],
+      ["güero", "blondie — friendly for a foreigner"],
+      ["pica", "it's spicy"],
+      ["para llevar", "to go (food)"],
+      ["la horchata", "sweet rice-and-cinnamon drink"],
+      ["quédese el cambio", "keep the change"],
+      ["¡órale!", "all right! / whoa!"]
+    ],
+    start: "n1",
+    nodes: {
+      n1: {
+        npc: "¡Pásele, pásele, güero! ¿Qué le damos?",
+        translation: "Come on in, blondie! What'll we get you?",
+        choices: [
+          { text: "Tres tacos al pastor, por favor.", next: "n2", good: true },
+          { text: "Tres tacos de pastor alemán.", next: "d1", good: false,
+            react: "El taquero parpadea. «¿De pastor... alemán? ¿De perro, joven?»" },
+          { text: "Dame tacos, rápido.", next: "d2", good: false,
+            react: "«Uy, qué genio. Aquí pedimos con 'por favor', güero.»" }
+        ]
+      },
+      d1: {
+        npc: "El pastor es puerco con piña, no perro. ¿Entonces qué va a querer?",
+        translation: "Al pastor is pork with pineapple, not dog. So what'll you have?",
+        choices: [
+          { text: "Ah, perdón. Tres al pastor, por favor.", next: "n2", good: true },
+          { text: "¿Y no tiene de gato?", next: "d1", good: false,
+            react: "El taquero se persigna. «Dios mío, los turistas.»" }
+        ]
+      },
+      d2: {
+        npc: "A ver, otra vez. ¿Qué le damos, joven?",
+        translation: "Let's try again. What'll we get you, young man?",
+        choices: [
+          { text: "Tres tacos al pastor, por favor.", next: "n2", good: true },
+          { text: "Ya te dije. Tacos.", next: "d2", good: false,
+            react: "El taquero atiende a otros tres clientes antes que a usted." }
+        ]
+      },
+      n2: {
+        npc: "¡Órale! Tres de pastor. ¿Con todo?",
+        translation: "You got it! Three al pastor. With everything? (onion and cilantro)",
+        choices: [
+          { text: "Sí, con todo, por favor.", next: "n3", good: true },
+          { text: "¿Con todo? ¿Hasta con zapatos?", next: "d3", good: false,
+            react: "El taquero se ríe. «Con cebolla y cilantro, joven. Zapatos los martes.»" },
+          { text: "No me toques.", next: "d4", good: false,
+            react: "«...Nadie lo está tocando, güero.» Silencio incómodo." }
+        ]
+      },
+      d3: {
+        npc: "Con cebolla y cilantro, pues. ¿Le pongo?",
+        translation: "With onion and cilantro, that is. Want them on there?",
+        choices: [
+          { text: "Sí, con todo, por favor.", next: "n3", good: true },
+          { text: "Cebolla no, cilantro no, todo sí.", next: "d3", good: false,
+            react: "«Eso... no tiene sentido, joven.»" }
+        ]
+      },
+      d4: {
+        npc: "Bueno... ¿con cebolla y cilantro o no?",
+        translation: "Anyway... onion and cilantro or not?",
+        choices: [
+          { text: "Sí, con todo. Perdón, estoy nervioso.", next: "n3", good: true },
+          { text: "¿Quién te dijo mi nombre?", next: "d4", good: false,
+            react: "El taquero mira a la señora de las aguas. Ella niega con la cabeza." }
+        ]
+      },
+      n3: {
+        npc: "¿Salsa roja o verde? Le aviso: la roja pica bonito.",
+        translation: "Red or green salsa? Heads up: the red one has a real kick.",
+        choices: [
+          { text: "La verde, por favor.", next: "n4", good: true },
+          { text: "Estoy muy caliente.", next: "d5", good: false,
+            react: "El taquero suelta la carcajada. «Eso no significa lo que usted cree, güero.»" },
+          { text: "Sin sopa, gracias.", next: "d6", good: false,
+            react: "«¿Sopa? Esto es taquería, no fonda, mi amigo.»" }
+        ]
+      },
+      d5: {
+        npc: "Se dice «tengo calor». Bueno, ¿roja o verde?",
+        translation: "You say «tengo calor» (I'm hot). So, red or green?",
+        choices: [
+          { text: "La verde, por favor.", next: "n4", good: true },
+          { text: "La roja. Yo aguanto todo.", next: "d5", good: false,
+            react: "Prueba una gotita de roja. Llora en tres idiomas." }
+        ]
+      },
+      d6: {
+        npc: "SAL-SA. ¿Roja o verde, joven?",
+        translation: "SAL-SA. Red or green, young man?",
+        choices: [
+          { text: "Ah, salsa. La verde, por favor.", next: "n4", good: true },
+          { text: "Ninguna. Odio la salsa.", next: "d6", good: false,
+            react: "Toda la taquería voltea a verlo. Una señora murmura una oración." }
+        ]
+      },
+      n4: {
+        npc: "¿Para aquí o para llevar?",
+        translation: "For here or to go?",
+        choices: [
+          { text: "Para aquí, por favor.", next: "n5", good: true },
+          { text: "Para llorar.", next: "d7", good: false,
+            react: "«¿Para llorar? Eso es con la roja, y usted pidió verde.»" },
+          { text: "Llévame contigo.", next: "d8", good: false,
+            react: "«Estoy casado, güero.» Le enseña el anillo." }
+        ]
+      },
+      d7: {
+        npc: "Lle-VAR. ¿Se los come aquí o se los lleva?",
+        translation: "To TAKE. Eating them here or taking them with you?",
+        choices: [
+          { text: "Aquí, por favor.", next: "n5", good: true },
+          { text: "Me los llevo a llorar.", next: "d7", good: false,
+            react: "El taquero decide no preguntar más." }
+        ]
+      },
+      d8: {
+        npc: "¿Aquí o para llevar? Última pregunta, lo prometo.",
+        translation: "Here or to go? Last question, I promise.",
+        choices: [
+          { text: "Para aquí, por favor.", next: "n5", good: true },
+          { text: "¿Es una cita?", next: "d8", good: false,
+            react: "Su esposa asoma desde la cocina. Usted finge leer el menú." }
+        ]
+      },
+      n5: {
+        npc: "¿Algo de tomar? Hay agua de horchata y de jamaica.",
+        translation: "Anything to drink? There's horchata and jamaica (hibiscus) water.",
+        choices: [
+          { text: "Una horchata, por favor.", next: "n6", good: true },
+          { text: "¿Jamaica... el país?", next: "d9", good: false,
+            react: "«La flor, joven. Jamaica la flor.»" },
+          { text: "Un vaso de leche, por favor.", next: "d10", good: false,
+            react: "«¿Leche? ¿Con tacos? La policía debería saber de usted.»" }
+        ]
+      },
+      d9: {
+        npc: "Es flor de jamaica: roja, fresquecita. ¿Le doy?",
+        translation: "It's hibiscus flower: red, nice and cold. Want one?",
+        choices: [
+          { text: "Sí, una de jamaica, por favor.", next: "n6", good: true },
+          { text: "¿Y tiene de otro país?", next: "d9", good: false,
+            react: "«...Horchata. La horchata no tiene pasaporte, joven.»" }
+        ]
+      },
+      d10: {
+        npc: "Horchata o jamaica, joven. Cosas normales.",
+        translation: "Horchata or jamaica, young man. Normal things.",
+        choices: [
+          { text: "Horchata, por favor.", next: "n6", good: true },
+          { text: "Leche con hielo.", next: "d10", good: false,
+            react: "«No.» Solo eso: «No.»" }
+        ]
+      },
+      n6: {
+        npc: "Aquí tiene, güero. Tres al pastor y su agua: cincuenta y cinco pesos.",
+        translation: "Here you go, blondie. Three al pastor and your drink: fifty-five pesos.",
+        choices: [
+          { text: "Aquí tiene sesenta. Quédese el cambio.", next: "win", good: true },
+          { text: "Tenga, cinco pesos.", next: "d11", good: false,
+            react: "«¿CINCO? Cincuenta y cinco, joven. Le faltan cincuenta.»" },
+          { text: "¿Aceptan abrazos?", next: "d12", good: false,
+            react: "«Los abrazos no pagan el gas, mi amigo.»" }
+        ]
+      },
+      d11: {
+        npc: "Cincuenta y cinco. Cinco-cinco. ¿Sí trae dinero, verdad?",
+        translation: "Fifty-five. Five-five. You do have money, right?",
+        choices: [
+          { text: "Sí, perdón. Aquí tiene sesenta.", next: "win", good: true },
+          { text: "¿Y en abrazos cuánto sería?", next: "d12", good: false,
+            react: "El taquero mira al cielo pidiendo paciencia." }
+        ]
+      },
+      d12: {
+        npc: "Efectivo, joven. Cincuenta y cinco pesos.",
+        translation: "Cash, young man. Fifty-five pesos.",
+        choices: [
+          { text: "Aquí tiene sesenta. Quédese el cambio.", next: "win", good: true },
+          { text: "Solo traigo tarjeta de biblioteca.", next: "d12", good: false,
+            react: "«¿De biblioteca? Ya ni los libros son gratis, güero.»" }
+        ]
+      }
+    }
+  },
+
+  mercado: {
+    title: "El Mercado",
+    place: "Oaxaca",
+    dif: 2,
+    emoji: "🧵",
+    color: "#eda13c",
+    goal: "🧵 Comprar la hamaca (traes 300)",
+    intro: "Oaxaca, mediodía. Un mercado lleno de color. Traes 300 pesos y una misión.",
+    winText: "Sale del mercado con su hamaca al hombro. La señora ya cuenta la historia del ladrón güero.",
+    failText: "Te fuiste sin hamaca y sin dignidad. La señora cuenta a todos que regateaste hacia ARRIBA.",
+    vocab: [
+      ["marchante", "customer / shopper (market-speak)"],
+      ["regatear", "to haggle"],
+      ["muy caro", "very expensive"],
+      ["¿me la deja en...?", "would you take...? (haggling)"],
+      ["hecho a mano", "handmade"],
+      ["fiar", "to sell on credit"],
+      ["papacito", "sweetie (teasing)"],
+      ["palabra final", "final word / final offer"]
+    ],
+    start: "m1",
+    nodes: {
+      m1: {
+        npc: "¡Pásele, marchante! ¿Qué busca? Tengo rebozos, alebrijes, hamacas...",
+        translation: "Come in, shopper! What are you looking for? I have shawls, alebrijes, hammocks...",
+        choices: [
+          { text: "Busco una hamaca, señora.", next: "m2", good: true },
+          { text: "Busco un abrazo.", next: "md1", good: false,
+            react: "«Ay, papacito. Eso no está en oferta.»" },
+          { text: "Tengo hambre.", next: "md2", good: false,
+            react: "«Aquí no es fonda, corazón. Pero compre algo y hablamos.»" }
+        ]
+      },
+      md1: {
+        npc: "Bueno, ¿y de comprar? ¿Qué busca?",
+        translation: "Okay, but to buy? What are you looking for?",
+        choices: [
+          { text: "Una hamaca, por favor.", next: "m2", good: true },
+          { text: "El amor.", next: "md1", good: false,
+            react: "«El amor cuesta más que mis hamacas, y no doy factura.»" }
+        ]
+      },
+      md2: {
+        npc: "Concéntrese, corazón. ¿Qué busca en MI puesto?",
+        translation: "Focus, sweetheart. What are you looking for at MY stand?",
+        choices: [
+          { text: "Una hamaca, señora.", next: "m2", good: true },
+          { text: "¿Vende tacos?", next: "md2", good: false,
+            react: "La señora señala la salida con una dignidad tremenda." }
+        ]
+      },
+      m2: {
+        npc: "¡Esta hamaca! Hecha a mano, hilo de Yucatán. Quinientos pesos.",
+        translation: "This hammock! Handmade, Yucatán thread. Five hundred pesos.",
+        choices: [
+          { text: "¿Quinientos? Está muy caro, señora.", next: "m3", good: true },
+          { text: "Le doy seiscientos.", next: "md3", good: false,
+            react: "«¡VENDIDO!» Espere... usted solo trae trescientos pesos." },
+          { text: "Qué fea hamaca.", next: "md4", good: false,
+            react: "La señora se lleva la mano al pecho. «¡Mis manos LLORARON haciendo esto!»" }
+        ]
+      },
+      md3: {
+        npc: "A ver, ¿cuánto trae de verdad, joven?",
+        translation: "Let's see, how much do you actually have, young man?",
+        choices: [
+          { text: "Trescientos. Por eso: muy caro.", next: "m3", good: true },
+          { text: "Setecientos, en monedas de un peso.", next: "md3", good: false,
+            react: "La señora extiende la mano y espera. Usted no trae setecientos. Qué pena." }
+        ]
+      },
+      md4: {
+        npc: "Respire y mírela otra vez. ¿Verdad que es bella?",
+        translation: "Breathe and look at it again. Isn't it beautiful?",
+        choices: [
+          { text: "Sí, es bella. Pero muy cara.", next: "m3", good: true },
+          { text: "Es... menos fea.", next: "md4", good: false,
+            react: "«¿MENOS fea?» La vecina del puesto de al lado dice «uuuuh»." }
+        ]
+      },
+      m3: {
+        npc: "¿Caro? ¡Es ARTE, joven! Bueno... cuatrocientos cincuenta.",
+        translation: "Expensive? It's ART, young man! Fine... four hundred fifty.",
+        choices: [
+          { text: "¿Me la deja en doscientos?", next: "m4", good: true },
+          { text: "¿Me la deja en cuatrocientos noventa?", next: "md5", good: false,
+            react: "«¡Claro que sí!» Espere. Usted acaba de regatear hacia ARRIBA." },
+          { text: "Cuatrocientos cincuenta está bien.", next: "md6", good: false,
+            react: "Usted solo trae trescientos. La señora ya está envolviendo la hamaca." }
+        ]
+      },
+      md5: {
+        npc: "¿Entonces? ¿Cuánto ofrece de verdad?",
+        translation: "So? What's your real offer?",
+        choices: [
+          { text: "Doscientos pesos, señora.", next: "m4", good: true },
+          { text: "¿Quinientos veinte?", next: "md5", good: false,
+            react: "«Este muchacho regatea al revés. ¡NAYELI, VEN A VER!»" }
+        ]
+      },
+      md6: {
+        npc: "¿Cómo que no trae? A ver, ¿cuánto ofrece?",
+        translation: "What do you mean you don't have it? Fine, what's your offer?",
+        choices: [
+          { text: "Doscientos, es lo justo.", next: "m4", good: true },
+          { text: "¿Me la fía?", next: "md6", good: false,
+            react: "«¿Fiar? Ni a mi compadre le fío, y es mi compadre.»" }
+        ]
+      },
+      m4: {
+        npc: "¡¿Doscientos?! ¿Quiere que mis hijos coman aire? Cuatrocientos.",
+        translation: "Two hundred?! You want my children to eat air? Four hundred.",
+        choices: [
+          { text: "Doscientos cincuenta. Es casi todo lo que traigo.", next: "m5", good: true },
+          { text: "¿Sus hijos comen aire?", next: "md7", good: false,
+            react: "«Es una EXPRESIÓN, criatura.» La vecina ya está grabando." },
+          { text: "Doscientos... dólares.", next: "md8", good: false,
+            react: "Los ojos de la señora brillan como el sol. Usted no tiene dólares." }
+        ]
+      },
+      md7: {
+        npc: "¿En qué estábamos? Ah, sí: cuatrocientos.",
+        translation: "Where were we? Oh, right: four hundred.",
+        choices: [
+          { text: "Doscientos cincuenta, señora.", next: "m5", good: true },
+          { text: "¿Trescientos mil?", next: "md7", good: false,
+            react: "«Véndanle ustedes», le dice la señora a nadie en particular." }
+        ]
+      },
+      md8: {
+        npc: "¿Dólares no hay? Entonces en pesos, ¿cuánto?",
+        translation: "No dollars, then? So in pesos, how much?",
+        choices: [
+          { text: "Doscientos cincuenta.", next: "m5", good: true },
+          { text: "Doscientos cincuenta... yenes.", next: "md8", good: false,
+            react: "La señora empieza a guardar la hamaca muy despacio, mirándolo fijo." }
+        ]
+      },
+      m5: {
+        npc: "Trescientos cincuenta. Palabra final, joven. Palabra. Final.",
+        translation: "Three hundred fifty. Final word, young man. Final. Word.",
+        choices: [
+          { text: "Trescientos. Es todo lo que traigo, se lo juro.", next: "m6", good: true },
+          { text: "Trescientos sesenta.", next: "md9", good: false,
+            react: "«¿Otra vez para ARRIBA? Su escuela le debe una disculpa.»" },
+          { text: "Mejor me voy.", next: "md10", good: false,
+            react: "Da tres pasos. Nadie lo detiene. Regresa despacito, apenado." }
+        ]
+      },
+      md9: {
+        npc: "Trescientos cincuenta dije. ¿Usted qué dice?",
+        translation: "I said three fifty. What do you say?",
+        choices: [
+          { text: "Trescientos, es todo lo que traigo.", next: "m6", good: true },
+          { text: "Trescientos cincuenta y cinco.", next: "md9", good: false,
+            react: "«¡Que es al REVÉS, criatura de Dios!»" }
+        ]
+      },
+      md10: {
+        npc: "¿Ya regresó? Trescientos cincuenta, decíamos.",
+        translation: "Back already? Three fifty, we were saying.",
+        choices: [
+          { text: "Trescientos. De verdad es todo.", next: "m6", good: true },
+          { text: "Me fui para pensar.", next: "md10", good: false,
+            react: "«Pensó tres metros, muy bien. ¿Y entonces?»" }
+        ]
+      },
+      m6: {
+        npc: "...Trescientos, pues. Pero le diré a todos que me robó.",
+        translation: "...Three hundred, then. But I'll tell everyone you robbed me.",
+        choices: [
+          { text: "Gracias, señora. Es usted un ángel.", next: "win", good: true },
+          { text: "¿Me da dos por trescientos?", next: "md11", good: false,
+            react: "«¡FUERA DE MI...!» Respira. «No, corazón.»" },
+          { text: "Sabía que aceptaría.", next: "md12", good: false,
+            react: "«¿Ah, sí? Cuatrocientos otra vez.» Su sonrisa da miedo." }
+        ]
+      },
+      md11: {
+        npc: "Una hamaca, trescientos pesos. ¿Trato?",
+        translation: "One hammock, three hundred pesos. Deal?",
+        choices: [
+          { text: "Trato. Gracias, señora.", next: "win", good: true },
+          { text: "¿Y un llaverito de regalo?", next: "md11", good: false,
+            react: "Le da el llaverito. Vale dos pesos. La mirada no tiene precio." }
+        ]
+      },
+      md12: {
+        npc: "Es broma. Trescientos. ¿Trato o no?",
+        translation: "Kidding. Three hundred. Deal or not?",
+        choices: [
+          { text: "Trato, señora. Gracias.", next: "win", good: true },
+          { text: "Sabía que era broma.", next: "md12", good: false,
+            react: "«Este muchacho no aprende», le dice la señora a su hamaca." }
+        ]
+      }
+    }
+  },
+
+  taxi: {
+    title: "El Taxi",
+    place: "Guadalajara",
+    dif: 3,
+    emoji: "🚕",
+    color: "#30a46c",
+    goal: "🚌 Llegar a la central antes de las 4",
+    intro: "Guadalajara. Tu camión sale a las 4:00. Un taxi se detiene. Son las 3:25.",
+    winText: "Paga, corre, y sube al camión a las 3:59. Atrás, el taxista grita: «¡VAMOS CHIVAS!»",
+    failText: "El camión se fue sin ti. El taxista te lleva de regreso... hablando de las Chivas todo el camino.",
+    vocab: [
+      ["derecho", "straight ahead"],
+      ["a la derecha", "to the right"],
+      ["el camión", "the bus (in Mexico!)"],
+      ["la central", "bus station"],
+      ["jefe", "boss — friendly address"],
+      ["súbale", "hop in"],
+      ["sesenta", "sixty"],
+      ["la caseta", "toll booth"]
+    ],
+    start: "t1",
+    nodes: {
+      t1: {
+        npc: "¿A dónde, jefe? Súbale, súbale.",
+        translation: "Where to, boss? Hop in, hop in.",
+        choices: [
+          { text: "A la central de autobuses, por favor.", next: "t2", good: true },
+          { text: "Al banco de autobuses.", next: "td1", good: false,
+            react: "«¿El banco? Los camiones no dan crédito, jefe.»" },
+          { text: "A México, rápido.", next: "td2", good: false,
+            react: "«¿A México? Seis horas, jefe. ¿Trae para la caseta?»" }
+        ]
+      },
+      td1: {
+        npc: "¿La CENTRAL de autobuses, dice? ¿Para agarrar camión?",
+        translation: "The bus STATION, you mean? To catch a bus?",
+        choices: [
+          { text: "Sí, eso. La central, por favor.", next: "t2", good: true },
+          { text: "No, el banco. Donde duermen los autobuses.", next: "td1", good: false,
+            react: "El taxista lo mira por el retrovisor un rato largo." }
+        ]
+      },
+      td2: {
+        npc: "Está en Guadalajara, jefe. ¿A dónde de AQUÍ?",
+        translation: "You're in Guadalajara, boss. Where to from HERE?",
+        choices: [
+          { text: "A la central de autobuses, por favor.", next: "t2", good: true },
+          { text: "¿Esto no es México?", next: "td2", good: false,
+            react: "«Es Guadalajara. México el país, sí. La ciudad, no, jefe.»" }
+        ]
+      },
+      t2: {
+        npc: "Va. ¿A qué hora sale su camión, jefe?",
+        translation: "You got it. What time does your bus leave, boss?",
+        choices: [
+          { text: "A las cuatro. ¿Llegamos?", next: "t3", good: true },
+          { text: "Sale a las cuarenta.", next: "td3", good: false,
+            react: "«¿A las cuarenta? Ese camión no existe ni en Japón, jefe.»" },
+          { text: "No sé. ¿Usted a qué hora sale?", next: "td4", good: false,
+            react: "«¿Yo? Yo nunca salgo. Yo soy el taxi.» Filosofía pura." }
+        ]
+      },
+      td3: {
+        npc: "Las horas llegan hasta doce, jefe. ¿A qué hora sale?",
+        translation: "Hours only go up to twelve, boss. What time does it leave?",
+        choices: [
+          { text: "Perdón, a las cuatro.", next: "t3", good: true },
+          { text: "A las... ¿cuarenta y cinco?", next: "td3", good: false,
+            react: "El taxista sube el volumen de la radio, despacito." }
+        ]
+      },
+      td4: {
+        npc: "Su camión, jefe. ¿A qué hora SALE?",
+        translation: "Your bus, boss. What time does it LEAVE?",
+        choices: [
+          { text: "A las cuatro de la tarde.", next: "t3", good: true },
+          { text: "Los camiones son un misterio.", next: "td4", good: false,
+            react: "«Muy poeta usted, pero el reloj no perdona, jefe.»" }
+        ]
+      },
+      t3: {
+        npc: "Son las tres y media. Vamos bien. ¿Vio a las Chivas ayer?",
+        translation: "It's three thirty. We're doing fine. Did you see Chivas yesterday?",
+        choices: [
+          { text: "No lo vi. ¿Ganaron?", next: "t4", good: true },
+          { text: "El fútbol es aburrido.", next: "td5", good: false,
+            react: "El taxi frena suavecito. El silencio pesa como piedra." },
+          { text: "¡Viva el América!", next: "td6", good: false,
+            react: "«¿AMÉRICA? Bájese.» Pausa. «Es broma. Pero duele, jefe.»" }
+        ]
+      },
+      td5: {
+        npc: "...¿Aburrido? Respire, jefe, y piense bien su respuesta.",
+        translation: "...Boring? Breathe, boss, and think your answer through.",
+        choices: [
+          { text: "Perdón. ¿Cómo van las Chivas?", next: "t4", good: true },
+          { text: "Prefiero el golf.", next: "td5", good: false,
+            react: "«¿GOLF?» El taxista baja diez kilómetros por hora, de puro luto." }
+        ]
+      },
+      td6: {
+        npc: "En este taxi le vamos a las Chivas, jefe. ¿Quedó claro?",
+        translation: "In this taxi we root for Chivas, boss. Is that clear?",
+        choices: [
+          { text: "Clarísimo. ¡Vamos Chivas!", next: "t4", good: true },
+          { text: "Bueno, ¿y qué es una chiva?", next: "td6", good: false,
+            react: "«¿QUÉ ES...?» El taxista se estaciona un momento para procesar." }
+        ]
+      },
+      t4: {
+        npc: "¡Tres a uno, jefe! Oiga... calle cerrada. El GPS dice «continúe derecho».",
+        translation: "Three to one, boss! Hey... road closed. The GPS says «continue derecho».",
+        choices: [
+          { text: "Derecho: siga recto, sin vuelta.", next: "t5", good: true },
+          { text: "Derecho y derecha es lo mismo.", next: "td7", good: false,
+            react: "«¡NO es lo mismo!» Da vuelta por si acaso. Plaza equivocada." },
+          { text: "Dé vuelta a la derecha.", next: "td8", good: false,
+            react: "Vuelta a la derecha. Una plaza llena de palomas. Ni una central." }
+        ]
+      },
+      td7: {
+        npc: "DERECHO es recto. DERECHA es vuelta. ¿Entonces?",
+        translation: "DERECHO is straight. DERECHA is a turn. So which is it?",
+        choices: [
+          { text: "Derecho, recto, sin vuelta.", next: "t5", good: true },
+          { text: "Izquierda, para estar seguros.", next: "td7", good: false,
+            react: "«¿IZQUIERDA?» El taxista aprieta el volante con cariño y dolor." }
+        ]
+      },
+      td8: {
+        npc: "Puras palomas, jefe. Regresando. ¿Derecho, entonces?",
+        translation: "Nothing but pigeons, boss. Heading back. Straight ahead, then?",
+        choices: [
+          { text: "Sí, derecho hasta la central.", next: "t5", good: true },
+          { text: "¿Podemos ver las palomas?", next: "td8", good: false,
+            react: "«Su camión sale a las cuatro. Las palomas no venden boletos, jefe.»" }
+        ]
+      },
+      t5: {
+        npc: "¡Llegamos, jefe! Tres cincuenta y cinco. Son sesenta pesos.",
+        translation: "We made it, boss! Three fifty-five. That's sixty pesos.",
+        choices: [
+          { text: "Aquí tiene setenta. Gracias por todo.", next: "win", good: true },
+          { text: "Tenga, dieciséis pesos.", next: "td9", good: false,
+            react: "«¿DieciSÉIS? Se-SEN-ta, jefe. Casi me da algo.»" },
+          { text: "Se lo pago mañana.", next: "td10", good: false,
+            react: "«¿Mañana? Mañana usted está en otra ciudad, jefe.»" }
+        ]
+      },
+      td9: {
+        npc: "Se-SEN-ta. Seis-cero. ¿Va?",
+        translation: "SIX-ty. Six-zero. Got it?",
+        choices: [
+          { text: "Perdón. Aquí tiene setenta.", next: "win", good: true },
+          { text: "Tenga diecisiete.", next: "td9", good: false,
+            react: "El taxista mira el reloj: tres cincuenta y siete. Usted juega con fuego." }
+        ]
+      },
+      td10: {
+        npc: "Sesenta pesos, jefe. Su camión sale en cinco minutos.",
+        translation: "Sixty pesos, boss. Your bus leaves in five minutes.",
+        choices: [
+          { text: "Aquí tiene setenta, quédese el cambio.", next: "win", good: true },
+          { text: "¿Acepta autógrafos?", next: "td10", good: false,
+            react: "«¿De quién? ¿De usted? Jefe, ni sé cómo se llama.»" }
+        ]
+      }
+    }
+  }
+};
+
+/* ================= game ================= */
+const HYPE = ["¡Órale!", "¡Eso!", "¡Ándale!", "¡Fierro!", "¡Así se habla!"];
+const DIF = ["fácil", "medio", "difícil"];
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const app = document.getElementById("app");
+const topbar = document.getElementById("topbar");
+const home = document.getElementById("home");
+const chat = document.getElementById("chat");
+const choicesEl = document.getElementById("choices");
+const overlay = document.getElementById("overlay");
+const sheet = overlay.querySelector(".sheet");
+const heartsEl = document.getElementById("hearts");
+const goalChip = document.getElementById("goal-chip");
+const streakChip = document.getElementById("streak-chip");
+const lifelineBtn = document.getElementById("btn-lifeline");
+const confettiEl = document.getElementById("confetti");
+
+let S = null; // per-run state
+let busy = false;
+
+function el(tag, cls, html) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (html != null) e.innerHTML = html;
+  return e;
+}
+function text(tag, cls, str) {
+  const e = el(tag, cls);
+  e.textContent = str;
+  return e;
+}
+function scrollChat() {
+  requestAnimationFrame(() => chat.scrollTo({ top: chat.scrollHeight, behavior: REDUCED ? "auto" : "smooth" }));
+}
+function wait(ms) { return REDUCED ? 30 : ms; }
+
+/* ---------- home ---------- */
+function showHome() {
+  S = null;
+  overlay.style.display = "none";
+  topbar.style.display = "none";
+  chat.style.display = "none";
+  choicesEl.style.display = "none";
+  home.style.display = "flex";
+  home.innerHTML = "";
+  home.appendChild(el("h1", null, "🇲🇽 ¡PERDIDO!"));
+  home.appendChild(text("p", "tag", "Sin inglés. Sin mapa. Sobrevive la conversación."));
+  const order = Object.keys(SCENES).sort((a, b) => SCENES[a].dif - SCENES[b].dif);
+  for (const key of order) {
+    const sc = SCENES[key];
+    const card = el("button", "card");
+    card.style.setProperty("--c", sc.color);
+    card.appendChild(text("span", "emoji", sc.emoji));
+    const info = el("span");
+    info.appendChild(text("b", null, sc.title));
+    info.appendChild(text("small", null, sc.place));
+    card.appendChild(info);
+    card.appendChild(text("span", "dif", "●".repeat(sc.dif) + "○".repeat(3 - sc.dif) + " " + DIF[sc.dif - 1]));
+    card.addEventListener("click", () => startScene(key));
+    home.appendChild(card);
+  }
+  home.appendChild(text("p", "foot", "❤️ 3 vidas · 🌵 2 traducciones por escena"));
+}
+
+/* ---------- scene ---------- */
+function startScene(key) {
+  const scene = SCENES[key];
+  S = { key, scene, nodeId: null, hearts: 3, lifelines: 2, streak: 0, turns: 0, lifelinesUsed: 0, transShown: false };
+  busy = false;
+  document.documentElement.style.setProperty("--accent", scene.color);
+  overlay.style.display = "none";
+  home.style.display = "none";
+  topbar.style.display = "flex";
+  chat.style.display = "flex";
+  choicesEl.style.display = "flex";
+  chat.innerHTML = "";
+  choicesEl.innerHTML = "";
+  goalChip.textContent = scene.goal;
+  updateBar();
+  chat.appendChild(text("div", "line", scene.intro));
+  chat.appendChild(text("div", "line obj", "Objetivo: " + scene.goal));
+  setTimeout(() => goto(scene.start), wait(700));
+}
+
+function updateBar() {
+  heartsEl.innerHTML = "";
+  for (let i = 0; i < 3; i++) {
+    const h = text("span", i < S.hearts ? "" : "lost", "❤️");
+    heartsEl.appendChild(h);
+  }
+  lifelineBtn.textContent = "🌵 " + S.lifelines;
+  lifelineBtn.classList.toggle("off", S.lifelines === 0 || S.transShown);
+  streakChip.style.display = S.streak >= 3 ? "inline" : "none";
+  streakChip.textContent = "🔥" + S.streak;
+}
+
+function goto(id) {
+  if (id === "win") return endScene(true);
+  S.nodeId = id;
+  S.transShown = false;
+  updateBar();
+  npcSay(S.scene.nodes[id].npc, () => showChoices(S.scene.nodes[id].choices));
+}
+
+function npcSay(str, cb) {
+  const b = el("div", "bubble npc typing", "<span></span><span></span><span></span>");
+  chat.appendChild(b);
+  scrollChat();
+  setTimeout(() => {
+    b.classList.remove("typing");
+    b.textContent = str;
+    scrollChat();
+    if (cb) cb();
+  }, wait(Math.min(1500, 400 + str.length * 12)));
+}
+
+function showChoices(choices) {
+  choicesEl.innerHTML = "";
+  const shuffled = choices.slice();
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  shuffled.forEach((c, i) => {
+    const btn = el("button", "choice");
+    btn.appendChild(text("span", "num", String(i + 1)));
+    btn.appendChild(text("span", null, c.text));
+    btn.addEventListener("click", () => pick(c));
+    choicesEl.appendChild(btn);
+  });
+  busy = false;
+}
+
+function pick(c) {
+  if (busy || !S) return;
+  busy = true;
+  choicesEl.innerHTML = "";
+  const me = text("div", "bubble me", c.text);
+  chat.appendChild(me);
+  scrollChat();
+  S.turns++;
+
+  if (c.good) {
+    S.streak++;
+    updateBar();
+    if (S.streak >= 3) {
+      setTimeout(() => {
+        chat.appendChild(text("div", "line hype", HYPE[(S.streak - 3) % HYPE.length] + " 🔥"));
+        scrollChat();
+      }, wait(350));
+    }
+    setTimeout(() => goto(c.next), wait(650));
+  } else {
+    S.hearts--;
+    S.streak = 0;
+    updateBar();
+    app.classList.remove("shake");
+    void app.offsetWidth;
+    if (!REDUCED) app.classList.add("shake");
+    if (navigator.vibrate) navigator.vibrate(70);
+    setTimeout(() => {
+      chat.appendChild(text("div", "line", c.react));
+      scrollChat();
+      if (S.hearts <= 0) setTimeout(() => endScene(false), wait(1100));
+      else setTimeout(() => goto(c.next), wait(1000));
+    }, wait(500));
+  }
+}
+
+/* ---------- lifeline ---------- */
+lifelineBtn.addEventListener("click", () => {
+  if (!S || S.lifelines === 0 || S.transShown || !S.nodeId) return;
+  S.lifelines--;
+  S.lifelinesUsed++;
+  S.transShown = true;
+  updateBar();
+  chat.appendChild(text("div", "trans", "🌵 " + S.scene.nodes[S.nodeId].translation));
+  scrollChat();
+});
+
+/* ---------- end screens ---------- */
+function endScene(won) {
+  busy = true;
+  choicesEl.innerHTML = "";
+  const scene = S.scene;
+  chat.appendChild(text("div", "line", won ? scene.winText : scene.failText));
+  scrollChat();
+  if (won) confetti(scene.color);
+
+  setTimeout(() => {
+    sheet.innerHTML = "";
+    sheet.appendChild(text("h2", null, won ? scene.emoji + " ¡Lo lograste!" : "😵 Te perdiste..."));
+    sheet.appendChild(text("p", "sub", won ? scene.winText : scene.failText));
+
+    const stats = el("div", "stats");
+    for (const [v, l] of [[S.turns, "turnos"], ["❤️".repeat(S.hearts) || "💔", "corazones"], ["🌵×" + S.lifelinesUsed, "usadas"]]) {
+      const st = el("div", "stat");
+      st.appendChild(text("b", null, String(v)));
+      st.appendChild(text("small", null, l));
+      stats.appendChild(st);
+    }
+    sheet.appendChild(stats);
+
+    if (won) {
+      const v = el("div", "vocab");
+      v.appendChild(text("h3", null, "Palabras nuevas"));
+      for (const [es, en] of scene.vocab) {
+        const row = el("div", "row");
+        row.appendChild(text("span", "es", es));
+        row.appendChild(text("span", "en", en));
+        v.appendChild(row);
+      }
+      sheet.appendChild(v);
+    }
+
+    const btns = el("div", "btns");
+    const again = text("button", "btn primary", "Otra vez");
+    again.addEventListener("click", () => startScene(S.key));
+    const menu = text("button", "btn ghost", "Escenas");
+    menu.addEventListener("click", showHome);
+    btns.appendChild(again);
+    btns.appendChild(menu);
+    sheet.appendChild(btns);
+
+    overlay.style.display = "flex";
+  }, wait(won ? 1500 : 900));
+}
+
+/* ---------- confetti (CSS animations only) ---------- */
+function confetti(accent) {
+  if (REDUCED) return;
+  const colors = [accent, "#f5d90a", "#3b9eff", "#e93d82", "#46a758", "#fff"];
+  for (let i = 0; i < 70; i++) {
+    const p = el("i");
+    p.style.left = Math.random() * 100 + "%";
+    p.style.background = colors[i % colors.length];
+    p.style.animationDuration = 2.2 + Math.random() * 1.8 + "s";
+    p.style.animationDelay = Math.random() * 0.8 + "s";
+    p.style.transform = "rotate(" + Math.random() * 360 + "deg)";
+    confettiEl.appendChild(p);
+    setTimeout(() => p.remove(), 5200);
+  }
+}
+
+/* ---------- keyboard shortcuts (1–4) ---------- */
+document.addEventListener("keydown", e => {
+  const n = parseInt(e.key, 10);
+  if (!n || n > 4) return;
+  if (overlay.style.display === "flex") return;
+  if (home.style.display !== "none" && home.style.display !== "") {
+    const cards = home.querySelectorAll(".card");
+    if (cards[n - 1]) cards[n - 1].click();
+    return;
+  }
+  const btns = choicesEl.querySelectorAll(".choice");
+  if (btns[n - 1]) btns[n - 1].click();
+});
+
+document.getElementById("btn-home").addEventListener("click", showHome);
+
+showHome();
+</script>
+</body>
+</html>
