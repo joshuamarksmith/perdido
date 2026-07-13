@@ -1714,7 +1714,7 @@ async function fetchJson(url, ms) {
 
 /* Wiktionary: a real dictionary — we read only the word's SPANISH section,
    so English homographs never leak in. Retries capitalized for proper nouns. */
-async function wiktionary(w) {
+async function wiktionaryParts(w) {
   for (const form of [w, w[0].toUpperCase() + w.slice(1)]) {
     const data = await fetchJson(
       "https://en.wiktionary.org/api/rest_v1/page/definition/" + encodeURIComponent(form), 6000);
@@ -1729,9 +1729,30 @@ async function wiktionary(w) {
       }
       if (parts.length === 2) break;
     }
-    if (parts.length) return parts.join(" · ");
+    if (parts.length) return parts;
   }
   return null;
+}
+
+/* A form-of definition ("first-person plural present indicative of dar")
+   still leaves the learner stranded on the lemma — so chase it one level
+   and append its meaning: "…of dar → dar: to give". */
+const FORM_OF_MARKER = /\b(?:form|inflection|spelling|plural|singular|feminine|masculine|diminutive|augmentative|participle|gerund|infinitive|indicative|subjunctive|imperative|preterite|imperfect|tense|person|clitic|superlative|comparative)\b/i;
+
+async function wiktionary(w) {
+  const parts = await wiktionaryParts(w);
+  if (!parts) return null;
+  let result = parts.join(" · ");
+  const m = FORM_OF_MARKER.test(parts[0]) &&
+    parts[0].match(/\bof ([\p{L}\p{M}'’-]+)[\s.…]*$/u);
+  const lemma = m && m[1].toLowerCase();
+  if (lemma && lemma !== w) {
+    try {
+      const sub = await wiktionaryParts(lemma);
+      if (sub) result += " → " + lemma + ": " + sub[0];
+    } catch (err) { /* keep the first-order result if the chase fails */ }
+  }
+  return result;
 }
 
 /* MyMemory fallback for slang Wiktionary lacks; drops echo-backs and low-confidence junk */
